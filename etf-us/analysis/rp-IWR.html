@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+<meta name="date" content="2023-07-02" />
+
+<title>iShares Russell Mid-Cap ETF</title>
+
+<script src="rmdlib/header-attrs-2.22/header-attrs.js"></script>
+<script src="rmdlib/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="rmdlib/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="rmdlib/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="rmdlib/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="rmdlib/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="rmdlib/navigation-1.1/tabsets.js"></script>
+<script src="rmdlib/accessible-code-block-0.0.1/empty-anchor.js"></script>
+<script src="rmdlib/htmlwidgets-1.6.2/htmlwidgets.js"></script>
+<link href="rmdlib/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="rmdlib/datatables-binding-0.28/datatables.js"></script>
+<link href="rmdlib/dt-core-1.13.4/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="rmdlib/dt-core-1.13.4/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="rmdlib/dt-core-1.13.4/js/jquery.dataTables.min.js"></script>
+<link href="rmdlib/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+<script src="rmdlib/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+<link href="rmdlib/font-awesome-6.4.0/css/all.min.css" rel="stylesheet" />
+<link href="rmdlib/font-awesome-6.4.0/css/v4-shims.min.css" rel="stylesheet" />
+<meta name="description" content="US ETF analysis. Sharpe, VaR, CVar, etc..." />
+<meta property="og:image" content="https://avatars3.githubusercontent.com/u/21966469?s=400&v=4" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">StockViz</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-globe"></span>
+     
+    Macro
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/macro/rp-bnd.html">Fixed Income</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/macro/rp-cur.html">Currencies</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/macro/rp-cmdy.html">Commodities</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-arrows-v"></span>
+     
+    52w H&amp;L
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/52wk-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/52wk-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-rocket"></span>
+     
+    ATH
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/ath-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/ath-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-magnet"></span>
+     
+    Drawdowns
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/drawdowns-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/drawdowns-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-train"></span>
+     
+    Streaks
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/streaks-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/streaks-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-hand-pointer-o"></span>
+     
+    Indian Indices
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-risk.html">Performance Metrics</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-IN.html">Changes</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-syn.html">Synthetic Indices</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-vol-NIFTY.html">NIFTY Volatility</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-valuations.html">Valuations</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-shopping-bag"></span>
+     
+    Funds
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports03/mf/rp-IN.html">Indian Mutual Funds</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-risk.html">US ETFs</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-sector.html">US Sector ETFs</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-country.html">Country $ ETFs</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-percent"></span>
+     
+    Fama-French
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-fama-french-industry.html">Industry</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-fama-french-factors.html">Factors</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-fama-french-regression.html">Regressions</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://stockviz.biz">
+    <span class="fa fa-home"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="https://stockviz.substack.com">
+    <span class="fa fa-envelope-o"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">iShares Russell Mid-Cap ETF</h1>
+<h3 class="subtitle">Equity Portfolio Changes</h3>
+<h4 class="date">July 2, 2023</h4>
+
+</div>
+
+
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-b3dbebb83e331ed11b00" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-b3dbebb83e331ed11b00">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-07-02<\/caption>","data":[["ADC/AGREE REALTY REIT CORP","APLS/APELLIS PHARMACEUTICALS INC","BAX/BAXTER INTERNATIONAL INC","CELH/CELSIUS HOLDINGS INC","CNHI/CNH INDUSTRIAL NV","CPNG/COUPANG INC CLASS A","CROX/CROCS INC","CTSH/COGNIZANT TECHNOLOGY SOLUTIONS COR","CWEN/CLEARWAY ENERGY INC CLASS C","CWENA/CLEARWAY ENERGY INC CLASS A","DLR/DIGITAL REALTY TRUST REIT INC","EME/EMCOR GROUP INC","FERG/FERGUSON PLC","FIS/FIDELITY NATIONAL INFORMATION SERV","FTI/TECHNIPFMC PLC","GTLB/GITLAB INC CLASS A","HCP/HASHICORP INC CLASS A","HLI/HOULIHAN LOKEY INC CLASS A","ICLR/ICON PLC","ILMN/ILLUMINA INC","INSP/INSPIRE MEDICAL SYSTEMS INC","IRDM/IRIDIUM COMMUNICATIONS INC","KNSL/KINSALE CAPITAL GROUP INC","KRTX/KARUNA THERAPEUTICS INC","MEDP/MEDPACE HOLDINGS INC","MRVL/MARVELL TECHNOLOGY INC","MUSA/MURPHY USA INC","NU/NU HOLDINGS LTD CLASS A","RBC/RBC BEARINGS INC","RCM/R1 RCM INC","RLI/RLI CORP","ROIV/ROIVANT SCIENCES LTD","SAIA/SAIA INC","SQ/BLOCK INC CLASS A","STAG/STAG INDUSTRIAL REIT INC","SWAV/SHOCKWAVE MEDICAL INC","TPG/TPG INC CLASS A","TXRH/TEXAS ROADHOUSE INC","WBA/WALGREEN BOOTS ALLIANCE INC","WING/WINGSTOP INC","XP/XP CLASS A INC","",""],["SNPS/SYNOPSYS INC","CDNS/CADENCE DESIGN SYSTEMS INC","ORLY/OREILLY AUTOMOTIVE INC","CMG/CHIPOTLE MEXICAN GRILL INC","MSI/MOTOROLA SOLUTIONS INC","FTNT/FORTINET INC","AZO/AUTOZONE INC","LULU/LULULEMON ATHLETICA INC","HSY/HERSHEY FOODS","ANET/ARISTA NETWORKS INC","LVS/LAS VEGAS SANDS CORP","DELL/DELL TECHNOLOGIES INC CLASS C","ERIE/ERIE INDEMNITY CLASS A","WIX/WIX.COM LTD","GH/GUARDANT HEALTH INC","CPA/COPA HOLDINGS A SA","JBLU/JETBLUE AIRWAYS CORP","RXO/RXO INC","CVNA/CARVANA CLASS A","UPST/UPSTART HOLDINGS INC","KNF/KNIFE RIVER INC","SIX/SIX FLAGS ENTERTAINMENT CORP","DEI/DOUGLAS EMMETT REIT INC","LUMN/LUMEN TECHNOLOGIES INC","LESL/LESLIES INC","BOH/BANK OF HAWAII CORP","HBI/HANESBRANDS INC","SLG/SL GREEN REALTY REIT CORP","JBGS/JBG SMITH PROPERTIES","OPEN/OPENDOOR TECHNOLOGIES INC","MBC/MASTERBRAND INC","JAMF/JAMF HOLDING CORP","PACW/PACWEST BANCORP","TWKS/THOUGHTWORKS HOLDING INC","NVAX/NOVAVAX INC","EHAB/ENHABIT INC","HPP/HUDSON PACIFIC PROPERTIES REIT INC","VTS/VITESSE ENERGY INC","ATUS/ALTICE USA INC CLASS A","FG/F&amp;G ANNUITIES AND LIFE INC","DH/DEFINITIVE HEALTHCARE CORP CLASS A","EVA/ENVIVA INC","WE/WEWORK INC CLASS A"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":48,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[10,25,48,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-8fc438dc132c7474a649" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-8fc438dc132c7474a649">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-06-11<\/caption>","data":[["CR/CRANE"],["CR WI/CRANE WHEN ISSUED"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-9896ccc39a35d54a0ef5" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-9896ccc39a35d54a0ef5">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-06-04<\/caption>","data":[["KNF/KNIFE RIVER CORP"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-57aef2d2423ac38d0360" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-57aef2d2423ac38d0360">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-05-28<\/caption>","data":[["-/ESC GCI LIBERTY INC SR ESCROW"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-15af5a0cc66386f291c7" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-15af5a0cc66386f291c7">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-05-21<\/caption>","data":[["RVTY/REVVITY INC","RXO/RXO INC"],["PKI/PERKINELMER INC","RXO WI/RXO INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-0d8fba29bd1e1edc39ec" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-0d8fba29bd1e1edc39ec">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-05-07<\/caption>","data":[["",""],["OSH/OAK STREET HEALTH INC","FRC/FIRST REPUBLIC BANK"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-1cf052339a1721da32dc" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-1cf052339a1721da32dc">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-04-09<\/caption>","data":[["CR WI/CRANE WHEN ISSUED","CXT/CRANE NXT"],["CR/CRANE HOLDINGS",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-64c146b0103d5536e375" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-64c146b0103d5536e375">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-04-02<\/caption>","data":[["","",""],["SGFY/SIGNIFY HEALTH INC CLASS A","SIVB/SVB FINANCIAL GROUP","SBNY/SIGNATURE BANK"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":8,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-3f08df29bf345084db91" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-3f08df29bf345084db91">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-03-26<\/caption>","data":[["RBA/RITCHIE BROS AUCTIONEERS INC"],["IAA/IAA INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ffb7d8c4990d7f5c15c4" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ffb7d8c4990d7f5c15c4">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-03-05<\/caption>","data":[["COLB/COLUMBIA BANKING SYSTEM INC",""],["COUP/COUPA SOFTWARE INC","UMPQ/UMPQUA HOLDINGS CORP"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-6834286e3ec8905a00b9" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-6834286e3ec8905a00b9">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-02-12<\/caption>","data":[[""],["STOR/STORE CAPITAL CORP"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-99ac6d593cf9bf6afe39" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-99ac6d593cf9bf6afe39">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-01-22<\/caption>","data":[["VTS/VITESSE ENERGY INC"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-f8f3afa1094b2fd33b42" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-f8f3afa1094b2fd33b42">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-01-08<\/caption>","data":[["UHALB/U HAUL NON VOTING SERIES N"],["UHAL B/U HAUL NON VOTING SERIES N"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-979d274a7d584df0c6a7" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-979d274a7d584df0c6a7">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-12-25<\/caption>","data":[["UHAL B/U HAUL NON VOTING SERIES N","MBC/MASTERBRAND INC"],["UHALB/AMERCO NON VOTING SERIES N","MBC WI/MASTERBRAND INC WHEN ISSUED"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-f4275aa6cf2bb99c74ab" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-f4275aa6cf2bb99c74ab">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-12-18<\/caption>","data":[["FBIN/FORTUNE BRANDS INNOVATIONS INC","MBC WI/MASTERBRAND INC WHEN ISSUED","FG/F&amp;G ANNUITIES AND LIFE INC"],["ABMD/ABIOMED INC","FBHS/FORTUNE BRANDS HOME AND SECURITY I","FG WI/F&amp;G ANNUITIES AND LIFE INC WHEN IS"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":8,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-86491a51bfe847ad964e" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-86491a51bfe847ad964e">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-12-11<\/caption>","data":[[""],["SWCH/SWITCH INC CLASS A"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-35893766a95a4463dbbd" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-35893766a95a4463dbbd">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-12-04<\/caption>","data":[["FG WI/F&amp;G ANNUITIES AND LIFE INC WHEN IS"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-f2a02f13823706d7a6ac" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-f2a02f13823706d7a6ac">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-11-27<\/caption>","data":[["",""],["ZEN/ZENDESK INC","CLR/CONTINENTAL RESOURCES INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-de0f4c78e52b7e34e03a" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-de0f4c78e52b7e34e03a">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-11-13<\/caption>","data":[["GEN/GEN DIGITAL INC","UHALB/AMERCO NON VOTING SERIES N"],["NLOK/NORTONLIFELOCK INC",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-2630828f57f75f99dd65" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-2630828f57f75f99dd65">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-11-06<\/caption>","data":[["RXO WI/RXO INC WHEN ISSUED","",""],["TWTR/TWITTER INC","Y/ALLEGHANY  CORP","AVLR/AVALARA INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":8,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-0231d3c63ede60c99507" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-0231d3c63ede60c99507">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-10-16<\/caption>","data":[["",""],["NLSN/NIELSEN HOLDINGS PLC","TMX/TERMINIX GLOBAL HOLDINGS INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-32c91d4e4fd78ae5f867" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-32c91d4e4fd78ae5f867">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-10-09<\/caption>","data":[["","",""],["DRE/DUKE REALTY REIT CORP","CTXS/CITRIX SYSTEMS INC","CHNG/CHANGE HEALTHCARE INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":8,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-3a3702407aef830f2129" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-3a3702407aef830f2129">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-09-18<\/caption>","data":[["COHR/COHERENT CORP",""],["II6/COHERENT CORP COMMON","MNDT/MANDIANT INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-e8ff803ba19f976aa6e4" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e8ff803ba19f976aa6e4">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-09-11<\/caption>","data":[["II6/COHERENT CORP COMMON"],["IIVI/II VI INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-15e95b0dc6db373d99ce" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-15e95b0dc6db373d99ce">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-08-14<\/caption>","data":[[""],["ACC/AMERICAN CAMPUS COMMUNITIES REIT I"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-90530f105cae7885fe92" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-90530f105cae7885fe92">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-08-07<\/caption>","data":[["RITM/RITHM CAPITAL CORP"],["NRZ/NEW RESIDENTIAL INVESTMENT REIT CO"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-5acc2c029cee58d9b06a" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-5acc2c029cee58d9b06a">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-07-31<\/caption>","data":[["HR/HEALTHCARE REALTY TRUST INC CLASS","EHAB/ENHABIT INC"],["-/Healthcare Realty Trust Incorporat","EHAB WI/ENHABIT INC WHEN ISSUED"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-7ba86a970903ba0b4ddd" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-7ba86a970903ba0b4ddd">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-07-24<\/caption>","data":[["-/Healthcare Realty Trust Incorporat"],["HTA/HEALTHCARE TRUST OF AMERICA REIT I"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-165321de5dbb7f088257" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-165321de5dbb7f088257">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-07-17<\/caption>","data":[["EHAB WI/ENHABIT INC WHEN ISSUED"],["EHAB/ENHABIT INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-46fa783c7d031b2ba931" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-46fa783c7d031b2ba931">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-07-10<\/caption>","data":[["EHAB/ENHABIT INC",""],["COHR/COHERENT INC","CDK/CDK GLOBAL INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ef01eafbc8ccd378f1ed" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ef01eafbc8ccd378f1ed">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-07-03<\/caption>","data":[["ALL/ALLSTATE CORP","EA/ELECTRONIC ARTS INC","GPN/GLOBAL PAYMENTS INC","BK/BANK OF NEW YORK MELLON CORP","BIIB/BIOGEN INC","DD/DUPONT DE NEMOURS INC","ZM/ZOOM VIDEO COMMUNICATIONS INC CLAS","ROST/ROSS STORES INC","EBAY/EBAY INC","CEG/CONSTELLATION ENERGY CORP","ALGN/ALIGN TECHNOLOGY INC","RBLX/ROBLOX CORP CLASS A","TWLO/TWILIO INC CLASS A","DELL/DELL TECHNOLOGIES INC CLASS C","OVV/OVINTIV INC","LVS/LAS VEGAS SANDS CORP","CHK/CHESAPEAKE ENERGY CORP","ZI/ZOOMINFO TECHNOLOGIES INC","LCID/LUCID GROUP INC","AR/ANTERO RESOURCES CORP","BJ/BJS WHOLESALE CLUB HOLDINGS INC","APP/APPLOVIN CORP CLASS A","COIN/COINBASE GLOBAL INC CLASS A","TTEK/TETRA TECH INC","WSC/WILLSCOT MOBILE MINI HOLDINGS CORP","AMC/AMC ENTERTAINMENT HOLDINGS INC CLA","PFGC/PERFORMANCE FOOD GROUP","SWN/SOUTHWESTERN ENERGY","PATH/UIPATH INC CLASS A","KBR/KBR INC","LSCC/LATTICE SEMICONDUCTOR CORP","RRC/RANGE RESOURCES CORP","EGP/EASTGROUP PROPERTIES REIT INC","PDCE/PDC ENERGY INC","FYBR/FRONTIER COMMUNICATIONS PARENT INC","THC/TENET HEALTHCARE CORP","IIVI/II VI INC","M/MACYS INC","WCC/WESCO INTERNATIONAL INC","RIVN/RIVIAN AUTOMOTIVE INC CLASS A","HOOD/ROBINHOOD MARKETS INC CLASS A","CAR/AVIS BUDGET GROUP INC","NSA/NATIONAL STORAGE AFFILIATES TRUST","SOFI/SOFI TECHNOLOGIES INC","OWL/BLUE OWL CAPITAL INC CLASS A","S/SENTINELONE INC CLASS A","HTZ/HERTZ GLOBAL HLDGS INC","SSRM/SSR MINING INC","DOCS/DOXIMITY INC CLASS A","RYAN/RYAN SPECIALTY HOLDINGS INC CLASS","AFRM/AFFIRM HOLDINGS INC CLASS A","TOST/TOAST INC CLASS A","MP/MP MATERIALS CORP CLASS A","CFLT/CONFLUENT INC CLASS A","DNA/GINKGO BIOWORKS HOLDINGS INC CLASS","KD/KYNDRYL HOLDINGS INC","EVA/ENVIVA INC","CCCS/CCC INTELLIGENT SOLUTIONS HOLDINGS","WE/WEWORK INC CLASS A"],["MPC/MARATHON PETROLEUM CORP","PANW/PALO ALTO NETWORKS INC","PXD/PIONEER NATURAL RESOURCE","OXY/OCCIDENTAL PETROLEUM CORP","MCK/MCKESSON CORP","VLO/VALERO ENERGY CORP","ADM/ARCHER DANIELS MIDLAND","MRVL/MARVELL TECHNOLOGY INC","YUMC/YUM CHINA HOLDINGS INC","CHGG/CHEGG INC","FL/FOOT LOCKER INC","HLF/HERBALIFE NUTRITION LTD","HAIN/HAIN CELESTIAL GROUP INC","XRX/XEROX HOLDINGS CORP","BFH/BREAD FINANCIAL HOLDINGS INC","SABR/SABRE CORP","SHLS/SHOALS TECHNOLOGIES GROUP INC CLAS","STNE/STONECO LTD CLASS A","FTDR/FRONTDOOR INC","SAGE/SAGE THERAPEUTICS INC","DCT/DUCK CREEK TECH INC","IOVA/IOVANCE BIOTHERAPEUTICS INC","BYND/BEYOND MEAT INC","COMM/COMMSCOPE HOLDING INC","FSLY/FASTLY INC CLASS A","QRTEA/QURATE RETAIL INC SERIES A","LZ/LEGALZOOM COM INC","EVBG/EVERBRIDGE INC","MCY/MERCURY GENERAL CORP","SLVM/SYLVAMO CORP","TSP/TUSIMPLE HOLDINGS INC CLASS A","SPCE/VIRGIN GALACTIC HOLDINGS INC SHS C","AI/C3 AI INC CLASS A","VMEO/VIMEO INC","ADPT/ADAPTIVE BIOTECHNOLOGIES CORP","PSFE/PAYSAFE LTD","CVAC/CUREVAC NV","NKTR/NEKTAR THERAPEUTICS","LMND/LEMONADE INC","ONL/ORION OFFICE REIT INC","DSEY/DIVERSEY HOLDINGS LTD","FIGS/FIGS INC CLASS A","SKLZ/SKILLZ INC CLASS A","SWI/SOLARWINDS CORP","ZIMV/ZIMVIE INC","NABL/N ABLE INC","FLNC/FLUENCE ENERGY INC CLASS A","VRM/VROOM INC","LYLT/LOYALTY VENTURES INC","MSP/DATTO HOLDING CORP","GOCO/GOHEALTH INC CLASS A","","","","","","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":64,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[10,25,50,64,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-9aaf991cf5824712805d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-9aaf991cf5824712805d">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-06-26<\/caption>","data":[[""],["PLAN/ANAPLAN INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-95ff7eacafc6d4bf96bf" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-95ff7eacafc6d4bf96bf">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-06-12<\/caption>","data":[[""],["CERN/CERNER CORP"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-b7bdd53e1ed185d28866" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-b7bdd53e1ed185d28866">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-05-29<\/caption>","data":[[""],["ZNGA/ZYNGA INC CLASS A"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-f6134199d225e773e671" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-f6134199d225e773e671">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-05-15<\/caption>","data":[["BALL/BALL CORP"],["BLL/BALL CORP"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-4fc797f018f31c58854d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-4fc797f018f31c58854d">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-04-17<\/caption>","data":[["WBD/WARNER BROS. DISCOVERY INC SERIES",""],["DISCA/DISCOVERY INC SERIES A","DISCK/DISCOVERY INC SERIES C"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-91d0249c87246db4490e" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-91d0249c87246db4490e">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-04-10<\/caption>","data":[["BFH/BREAD FINANCIAL HOLDINGS INC","ENOV/ENOVIS CORP WHEN ISSUED","ESAB/ESAB CORP"],["PBCT/PEOPLES UNITED FINANCIAL INC","CFX/COLFAX CORP","ADS/ALLIANCE DATA SYSTEMS INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":8,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-c9c302ba8529e2216212" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-c9c302ba8529e2216212">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-04-03<\/caption>","data":[[""],["CONE/CYRUSONE REIT INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-eda970c4a0ba1af3313c" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-eda970c4a0ba1af3313c">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-03-20<\/caption>","data":[["DINO/HF SINCLAIR CORP"],["HFC/HOLLYFRONTIER CORP"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-53be933fe4cea0e7394b" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-53be933fe4cea0e7394b">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-03-13<\/caption>","data":[[""],["NUAN/NUANCE COMMUNICATIONS INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-c940a85938f5c8f54e4d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-c940a85938f5c8f54e4d">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-03-06<\/caption>","data":[["ZIMV/ZIMVIE INC",""],["INFO/IHS MARKIT LTD","MCFE/MCAFEE CORP CLASS A"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-91c8a10c40c9cf3c1fb9" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-91c8a10c40c9cf3c1fb9">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-02-20<\/caption>","data":[["PARA/PARAMOUNT GLOBAL CLASS B","PARAA/PARAMOUNT GLOBAL CLASS A",""],["XLNX/XILINX INC","VIAC/VIACOMCBS INC CLASS B","VIACA/VIACOMCBS INC CLASS A"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":8,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-a126e2109021b34105c8" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-a126e2109021b34105c8">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-02-06<\/caption>","data":[["",""],["STL/STERLING BANCORP","SC/SANTANDER CONSUMER USA HOLDINGS IN"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-3a52f275bdc8f8812fb6" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-3a52f275bdc8f8812fb6">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-01-16<\/caption>","data":[["WTW/WILLIS TOWERS WATSON PLC"],["WLTW/WILLIS TOWERS WATSON PLC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-de4f72a4ae98e431e586" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-de4f72a4ae98e431e586">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-01-09<\/caption>","data":[[""],["ATH/ATHENE HOLDING LTD CLASS A"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-c571091ea9d89ab3b871" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-c571091ea9d89ab3b871">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-01-02<\/caption>","data":[[""],["COR/CORESITE REALTY REIT CORP"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-fae596bc4dcf5b22227d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-fae596bc4dcf5b22227d">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-12-26<\/caption>","data":[["GFS/GLOBALFOUNDRIES INC","OLPX/OLAPLEX HOLDINGS INC","FLNC/FLUENCE ENERGY INC","INFA/INFORMATICA INC CLASS A","TWKS/THOUGHTWORKS HOLDING INC","DH/DEFINITIVE HEALTHCARE CORP CLASS A"],["","","","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":11,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[10,11,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-b908182fe615f1a49b3a" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-b908182fe615f1a49b3a">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-12-19<\/caption>","data":[["",""],["KSU/KANSAS CITY SOUTHERN","HRC/HILL ROM HOLDINGS INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-7640b56f1b017ab39c95" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-7640b56f1b017ab39c95">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-12-12<\/caption>","data":[[""],["PPD/PPD INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-a41897388b28c7f2d314" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-a41897388b28c7f2d314">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-12-05<\/caption>","data":[["AZTA/AZENTA INC"],["BRKS/BROOKS AUTOMATION INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-92a308dad157b9c223b6" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-92a308dad157b9c223b6">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-11-28<\/caption>","data":[[""],["XLRN/ACCELERON PHARMA INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-1d55c3887cd11e008930" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-1d55c3887cd11e008930">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-11-21<\/caption>","data":[["ONL/ORION OFFICE REIT INC"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-5ad6fcecfbd0d3d63274" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-5ad6fcecfbd0d3d63274">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-11-14<\/caption>","data":[["LYLT/LOYALTY VENTURES INC"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-6f3c19e701bef9b199f5" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-6f3c19e701bef9b199f5">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-11-07<\/caption>","data":[["",""],["VER/VEREIT INC","MDLA/MEDALLIA INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-133a8ea40c3884b95eba" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-133a8ea40c3884b95eba">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-10-31<\/caption>","data":[["ARD/ARDAGH GROUP SA CLASS A"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-9b121f6d2a8c0d7b68c9" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-9b121f6d2a8c0d7b68c9">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-10-10<\/caption>","data":[["CTRA/COTERRA ENERGY INC","WOLF/WOLFSPEED INC","RRX/REGAL REXNORD CORP","MNDT/MANDIANT INC","SLVM/SYLVAMO CORP","AMBP/ARDAGH METAL PACKAGING SA"],["CREE/CREE INC","XEC/CIMAREX ENERGY","COG/CABOT OIL &amp; GAS CORP","RBC/REGAL BELOIT","FEYE/FIREEYE INC","ARD/ARDAGH GROUP SA CLASS A"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":11,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[10,11,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-63528487b59f92560cfe" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-63528487b59f92560cfe">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-09-26<\/caption>","data":[["FIGS/FIGS INC CLASS A","PCOR/PROCORE TECHNOLOGIES INC","CNM/CORE &amp; MAIN INC CLASS A","MCW/MISTER CAR WASH INC","PYCR/PAYCOR HCM INC","LZ/LEGALZOOM COM INC"],["GRA/WR GRACE","","","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":11,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[10,11,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-189bff9be0b88bef669d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-189bff9be0b88bef669d">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-09-05<\/caption>","data":[[""],["PFPT/PROOFPOINT INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-4f348ed07d5f0f57bf99" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-4f348ed07d5f0f57bf99">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-08-29<\/caption>","data":[[""],["MXIM/MAXIM INTEGRATED PRODUCTS INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-abe46d56afbb1e1fb5bc" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-abe46d56afbb1e1fb5bc">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-08-08<\/caption>","data":[["BBWI/BATH AND BODY WORKS INC","GXO/GXO LOGISTICS INC","VSCO/VICTORIA S SECRET"],["LB/L BRANDS INC","WRI/WEINGARTEN REALTY INVESTORS REIT",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":8,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-23b7c6584003588d9f63" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-23b7c6584003588d9f63">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-08-01<\/caption>","data":[[""],["BPYU/BROOKFIELD PROPERTY REIT INC CLASS"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-36cd0b86856ed0d4d99c" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-36cd0b86856ed0d4d99c">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-07-25<\/caption>","data":[["NABL/N ABLE INC",""],["ALXN/ALEXION PHARMACEUTICALS INC","WORK/SLACK TECHNOLOGIES CLASS A INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-59407663e70a0d5808b2" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-59407663e70a0d5808b2">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-07-04<\/caption>","data":[["DXCM/DEXCOM INC","PLTR/PALANTIR TECHNOLOGIES INC CLASS A","PSX/PHILLIPS","AFL/AFLAC INC","SBAC/SBA COMMUNICATIONS REIT CORP CLASS","YUM/YUM BRANDS INC","VLO/VALERO ENERGY CORP","CZR/CAESARS ENTERTAINMENT INC","PLUG/PLUG POWER INC","NVAX/NOVAVAX INC","DKNG/DRAFTKINGS INC CLASS A","WIX/WIX.COM LTD","DASH/DOORDASH INC CLASS A","GME/GAMESTOP CORP CLASS A","PENN/PENN NATIONAL GAMING INC","RH/RH","RUN/SUNRUN INC","CLVT/CLARIVATE PLC","DAR/DARLING INGREDIENTS INC","DECK/DECKERS OUTDOOR CORP","LAD/LITHIA MOTORS INC","CLF/CLEVELAND CLIFFS INC","TPL/TEXAS PACIFIC LAND CORP","NTRA/NATERA INC","BLDR/BUILDERS FIRSTSOURCE INC","BSY/BENTLEY SYSTEMS INC CLASS B","YETI/YETI HOLDINGS INC","OGN/ORGANON","SITE/SITEONE LANDSCAPE SUPPLY INC","CHDN/CHURCHILL DOWNS INC","AA/ALCOA CORP","BRKS/BROOKS AUTOMATION INC","VAC/MARRIOTT VACATIONS WORLDWIDE CORP","SF/STIFEL FINANCIAL CORP","BLD/TOPBUILD CORP","FRPT/FRESHPET INC","MRTX/MIRATI THERAPEUTICS INC","WMS/ADVANCED DRAINAGE SYSTEMS INC","X/US STEEL CORP","LPX/LOUISIANA PACIFIC CORP","RARE/ULTRAGENYX PHARMACEUTICAL INC","SKLZ/SKILLZ INC CLASS A","MTZ/MASTEC INC","OPEN/OPENDOOR TECHNOLOGIES INC","BEPC/BROOKFIELD RENEWABLE SUBORDINATE V","BYD/BOYD GAMING CORP","CHPT/CHARGEPOINT HOLDINGS INC CLASS A","DTM/DT MIDSTREAM INC","FOUR/SHIFT4 PAYMENTS INC CLASS A","PSFE/PAYSAFE LTD","CVAC/CUREVAC NV","QS/QUANTUMSCAPE CORP CLASS A","JHG/JANUS HENDERSON GROUP PLC","RKT/ROCKET COMPANIES INC CLASS A","TSP/TUSIMPLE HOLDINGS INC CLASS A","AGL/AGILON HEALTH INC","NFE/NEW FORTRESS ENERGY INC CLASS A","HAYW/HAYWARD HOLDINGS INC","DSEY/DIVERSEY HOLDINGS LTD","DV/DOUBLEVERIFY HOLDINGS INC","UWMC/UWM HOLDINGS CORP CLASS A"],["ACAD/ACADIA PHARMACEUTICALS INC","AGIO/AGIOS PHARMACEUTICALS INC","AIV/APARTMENT INVESTMENT AND MANAGEMEN","ALGN/ALIGN TECHNOLOGY INC","ALKS/ALKERMES","APLE/APPLE HOSPITALITY REIT INC","ANAT/AMERICAN NATIONAL GROUP INC","AMWL/AMERICAN WELL CORP CLASS A","ASB/ASSOCIATED BANCORP","BIGC/BIGCOMMERCE HOLDINGS INC SERIES","BDN/BRANDYWINE REALTY TRUST REIT","BLUE/BLUEBIRD BIO INC","ARRY/ARRAY TECHNOLOGIES INC","BLI/BERKELEY LIGHTS INC","ETRN/EQUITRANS MIDSTREAM CORP","CBT/CABOT CORP","EQC/EQUITY COMMONWEALTH REIT","ENR/ENERGIZER HOLDINGS INC","EAF/GRAFTECH INTERNATIONAL LTD","ESRT/EMPIRE STATE REALTY REIT INC TRUST","MRNA/MODERNA INC","F/FORD MOTOR CO","FCX/FREEPORT MCMORAN INC","KLAC/KLA CORP","JCI/JOHNSON CONTROLS INTERNATIONAL PLC","MUR/MURPHY OIL CORP","HP/HELMERICH &amp; PAYNE INC","HAE/HAEMONETICS CORP","MIC/MACQUARIE INFRASTRUCTURE CORP","JWA/JOHN WILEY AND SONS INC CLASS A","GHC/GRAHAM HOLDINGS COMPANY CLASS B","GBT/GLOBAL BLOOD THERAPEUTICS INC","LGFB/LIONS GATE ENTERTAINMENT NON VOTIN","MSGE/MADISON SQUARE GARDEN ENTERTAINMEN","LGFA/LIONS GATE ENTERTAINMENT VOTING CO","FROG/JFROG LTD","TWLO/TWILIO INC CLASS A","SEDG/SOLAREDGE TECHNOLOGIES INC","PRAH/PRA HEALTH SCIENCES INC","RETA/REATA PHARMACEUTICALS INC CLASS A","OUT/OUTFRONT MEDIA INC","PD/PAGERDUTY INC","SFM/SPROUTS FARMERS MARKET INC","OFC/CORPORATE OFFICE PROPERTIES TRUST","NUS/NU SKIN ENTERPRISES INC CLASS A","TWOU/2U INC","THS/TREEHOUSE FOODS INC","TREE/LENDINGTREE INC","TDS/TELEPHONE AND DATA SYSTEMS INC","TRN/TRINITY INDUSTRIES INC","PGRE/PARAMOUNT GROUP REIT INC","SATS/ECHOSTAR CORP CLASS A","USM/UNITED STATES CELLULAR CORP","SANA/SANA BIOTECHNOLOGY INC","","","","","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":66,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[10,25,50,66,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-15b4663db31df2ba469c" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-15b4663db31df2ba469c">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-06-20<\/caption>","data":[["",""],["GRUB/GRUBHUB INC","STAY/EXTENDED STAY AMERICA UNITS INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-525b0b6efccbadccd10c" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-525b0b6efccbadccd10c">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-06-13<\/caption>","data":[["",""],["TCF/TCF FINANCIAL CORP","CLGX/CORELOGIC INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-0ffa2603b8f8db666cab" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-0ffa2603b8f8db666cab">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-05-30<\/caption>","data":[["VMEO/VIMEO INC"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-7feb2b6e2948accdf754" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-7feb2b6e2948accdf754">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-05-23<\/caption>","data":[[""],["FLIR/FLIR SYSTEMS INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-bd8b856185eef8dbe693" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-bd8b856185eef8dbe693">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-05-02<\/caption>","data":[[""],["RP/REALPAGE INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-a9c8c6d9577a6a6cf279" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-a9c8c6d9577a6a6cf279">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-04-25<\/caption>","data":[["","",""],["VAR/VARIAN MEDICAL SYSTEMS INC","IPHI/INPHI CORP","PS/PLURALSIGHT INC CLASS A"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":8,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-680951c503fbc428f842" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-680951c503fbc428f842">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-03-28<\/caption>","data":[["SHLS/SHOALS TECHNOLOGIES GROUP INC CLAS","MRVI/MARAVAI LIFESCIENCES HOLDINGS INC","SHC/SOTERA HEALTH COMPANY","PLTK/PLAYTIKA HOLDING CORP","UPST/UPSTART HOLDINGS INC","WOOF/PETCO HEALTH AND WELLNESS COMPANY","AI/C3 AI INC CLASS A","CERT/CERTARA INC","DRVN/DRIVEN BRANDS HOLDINGS INC","SANA/SANA BIOTECHNOLOGY INC","SGFY/SIGNIFY HEALTH INC CLASS A"],["","","","","","","","","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":16,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[10,16,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-2560d08a3ae505763595" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-2560d08a3ae505763595">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-03-07<\/caption>","data":[[""],["EV/EATON VANCE COM NON VOTING CORP"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-f1d1bff2d9b8333a916d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-f1d1bff2d9b8333a916d">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-02-21<\/caption>","data":[["TNL/TRAVEL LEISURE"],["WYND/WYNDHAM DESTINATIONS INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-7debbebba952d04fc16d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-7debbebba952d04fc16d">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-01-31<\/caption>","data":[["AXON/AXON ENTERPRISE INC"],["AAXN/AXON ENTERPRISE INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-d90c70c822d2e4b49591" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-d90c70c822d2e4b49591">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-01-24<\/caption>","data":[[""],["CXO/CONCHO RESOURCES INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-5093fc994adf750c4046" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-5093fc994adf750c4046">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-01-17<\/caption>","data":[["",""],["PE/PARSLEY ENERGY INC CLASS A","-/SL GREEN REALTY CORP CASH ACCRUAL"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-101bf69f58628e918f08" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-101bf69f58628e918f08">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-01-10<\/caption>","data":[["",""],["TIF/TIFFANY","WPX/WPX ENERGY INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-7696ea791373e6f89cd6" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-7696ea791373e6f89cd6">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-01-03<\/caption>","data":[[""],["TCO/TAUBMAN CENTERS REIT INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-5278e49989f65157fbe8" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-5278e49989f65157fbe8">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-12-27<\/caption>","data":[["U/UNITY SOFTWARE INC","ARRY/ARRAY TECHNOLOGIES INC","AMWL/AMERICAN WELL CORP CLASS A","LESL/LESLIES INC","FROG/JFROG LTD","ALGM/ALLEGRO MICROSYSTEMS INC","MCFE/MCAFEE CORP CLASS A","MSP/DATTO HOLDING CORP"],["GLIBA/GCI LIBERTY INC CLASS A","HDS/HD SUPPLY HOLDINGS INC","","","","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":13,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[10,13,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-5ea04c9ecdd065a0412b" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-5ea04c9ecdd065a0412b">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-12-20<\/caption>","data":[["AIRC/APARTMENT INCOME REIT CORP"],["DNKN/DUNKIN BRANDS GROUP INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-9c503f77e011b43ae941" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-9c503f77e011b43ae941">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-12-06<\/caption>","data":[["CNXC/CONCENTRIX CORP"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-217a72d6a6014c85eea7" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-217a72d6a6014c85eea7">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-11-22<\/caption>","data":[["VTRS/VIATRIS INC WHEN ISSUED"],["MYL/MYLAN NV"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-92a4f5d12510c3135f42" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-92a4f5d12510c3135f42">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-11-15<\/caption>","data":[["-/APARTMENT INVESTMENT  CASH ACCRUAL"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-059ad52c3dc3a0e569bf" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-059ad52c3dc3a0e569bf">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-11-08<\/caption>","data":[[""],["LVGO/LIVONGO HEALTH INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ee82089de17d5c1bb895" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ee82089de17d5c1bb895">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-11-01<\/caption>","data":[[""],["IMMU/IMMUNOMEDICS INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-0fb33b806f56fc5905a0" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-0fb33b806f56fc5905a0">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-10-18<\/caption>","data":[["VNT/VONTIER CORP"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-3b16f204f90d676ed92e" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-3b16f204f90d676ed92e">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-10-11<\/caption>","data":[["TMX/TERMINIX GLOBAL HOLDINGS INC","",""],["AMTD/TD AMERITRADE HOLDING CORP","SERV/SERVICEMASTER GLOBAL HOLDINGS INC","NBL/NOBLE ENERGY INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":8,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-a5247737e408a605be5f" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-a5247737e408a605be5f">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-10-04<\/caption>","data":[[""],["ETFC/E TRADE FINANCIAL CORP"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-2d00b9eb0bc450d8fdcc" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-2d00b9eb0bc450d8fdcc">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-09-27<\/caption>","data":[["LUMN/LUMEN TECHNOLOGIES INC","RPRX/ROYALTY PHARMA PLC CLASS A","DNB/DUN BRADST HLDG INC","AZEK/AZEK COMPANY INC CLASS A","VRM/VROOM INC","OSH/OAK STREET HEALTH","JAMF/JAMF HOLDING CORP","BIGC/BIGCOMMERCE HOLDINGS SERIES","BLI/BERKELEY LIGHTS INC","ACI/ALBERTSONS COMPANY INC CLASS A","LMND/LEMONADE INC","NCNO/NCINO INC","DCT/DUCK CREEK TECH INC","GOCO/GOHEALTH INC CLASS A"],["CTL/CENTURYLINK INC","","","","","","","","","","","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":19,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[10,19,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-8ee8924cfe591db1e293" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-8ee8924cfe591db1e293">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-09-06<\/caption>","data":[[""],["LOGM/LOGMEIN INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-e5a381bf7eb35bfc4f2a" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e5a381bf7eb35bfc4f2a">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-08-16<\/caption>","data":[[""],["OXY WS/OCCIDENTAL PETROLEUM EQUITY WARRAN"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-a33d54be9affa5583c4a" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-a33d54be9affa5583c4a">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-08-09<\/caption>","data":[["OXY WS/OCCIDENTAL PETROLEUM EQUITY WARRAN",""],["LM/LEGG MASON INC","OXY WS WI/OCCIDENTAL PETROLEUM EQUITY WARRAN"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-e7765ac410f62b5fca0a" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e7765ac410f62b5fca0a">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-08-02<\/caption>","data":[["OXY WS WI/OCCIDENTAL PETROLEUM EQUITY WARRAN"],["1812473D/OCCIDENTAL PETROLEUM CORPORATION"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ee3bcba21c0e358b2c15" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ee3bcba21c0e358b2c15">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-07-26<\/caption>","data":[["1812473D/OCCIDENTAL PETROLEUM CORPORATION",""],["CZR/CAESARS ENTERTAINMENT CORP","-/OCCIDENTAL PETROLEUM CORP"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-1dfd66e42d4c9915642d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-1dfd66e42d4c9915642d">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-07-05<\/caption>","data":[["PPG/PPG INDUSTRIES INC","JCI/JOHNSON CONTROLS INTERNATIONAL PLC","HPQ/HP INC","ALXN/ALEXION PHARMACEUTICALS INC","F/FORD MOTOR CO","PRU/PRUDENTIAL FINANCIAL INC","MPC/MARATHON PETROLEUM CORP","OTIS/OTIS WORLDWIDE CORP","SPG/SIMON PROPERTY GROUP REIT INC","VFC/VF CORP","LUV/SOUTHWEST AIRLINES","CARR/CARRIER GLOBAL CORP","DAL/DELTA AIR LINES INC","LYB/LYONDELLBASELL INDUSTRIES NV CLASS","AMCR/AMCOR PLC","KKR/KKR AND CO INC","TDOC/TELADOC HEALTH INC","OXY/OCCIDENTAL PETROLEUM CORP","DDOG/DATADOG INC CLASS A","CRWD/CROWDSTRIKE HOLDINGS INC CLASS A","WORK/SLACK TECHNOLOGIES CLASS A INC","PINS/PINTEREST INC CLASS A","AMTD/TD AMERITRADE HOLDING CORP","APO/APOLLO GLOBAL MANAGEMENT INC CLASS","CHGG/CHEGG INC","QDEL/QUIDEL CORP","IMMU/IMMUNOMEDICS INC","GNRC/GENERAC HOLDINGS INC","CCL/CARNIVAL CORP","TREX/TREX INC","FIVN/FIVE9 INC","SEDG/SOLAREDGE TECHNOLOGIES INC","RGEN/REPLIGEN CORP","AMED/AMEDISYS INC","STNE/STONECO LTD CLASS A","AAXN/AXON ENTERPRISE INC","FSLY/FASTLY INC CLASS A","LITE/LUMENTUM HOLDINGS INC","NVCR/NOVOCURE LTD","PTON/PELOTON INTERACTIVE CLASS A INC","TNDM/TANDEM DIABETES CARE INC","ACAD/ACADIA PHARMACEUTICALS INC","IPHI/INPHI CORP","GLOB/GLOBANT SA","ENPH/ENPHASE ENERGY INC","FR/FIRST INDUSTRIAL REALTY TRUST INC","EVBG/EVERBRIDGE INC","REXR/REXFORD INDUSTRIAL REALTY REIT INC","TXG/10X GENOMICS INC CLASS A","SAM/BOSTON BEER INC CLASS A","TW/TRADEWEB MARKETS INC CLASS A","XLRN/ACCELERON PHARMA INC","HAE/HAEMONETICS CORP","SAIC/SCIENCE APPLICATIONS INTERNATIONAL","MRCY/MERCURY SYSTEMS INC","FCN/FTI CONSULTING INC","MSA/MSA SAFETY INC","NET/CLOUDFLARE INC CLASS A","GBT/GLOBAL BLOOD THERAPEUTICS INC","IOVA/IOVANCE BIOTHERAPEUTICS INC","LVGO/LIVONGO HEALTH INC","ARES/ARES MANAGEMENT CORP CLASS A","RETA/REATA PHARMACEUTICALS INC CLASS A","GMED/GLOBUS MEDICAL INC CLASS A","SYNH/SYNEOS HEALTH INC CLASS A","CRUS/CIRRUS LOGIC INC","CG/CARLYLE GROUP INC","VRT/VERTIV HOLDINGS CO","SPCE/VIRGIN GALACTIC HOLDINGS INC SHS C","-/OCCIDENTAL PETROLEUM CORP"],["FISV/FISERV INC","AMD/ADVANCED MICRO DEVICES INC","GPN/GLOBAL PAYMENTS INC","DG/DOLLAR GENERAL CORP","NEM/NEWMONT","LRCX/LAM RESEARCH CORP","LHX/L3HARRIS TECHNOLOGIES INC","DLR/DIGITAL REALTY TRUST REIT INC","CNC/CENTENE CORP","SQ/SQUARE INC CLASS A","DXCM/DEXCOM INC","SRE/SEMPRA ENERGY","SBAC/SBA COMMUNICATIONS REIT CORP CLASS","TEAM/ATLASSIAN PLC CLASS A","JHG/JANUS HENDERSON GROUP PLC","AA/ALCOA CORP","CIT/CIT GROUP INC","GT/GOODYEAR TIRE &amp; RUBBER","KAR/KAR AUCTION SERVICES INC","BKU/BANKUNITED INC","CVET/COVETRUS INC","CIM/CHIMERA INVESTMENT CORP","CHX/CHAMPIONX CORP","M/MACYS INC","WCC/WESCO INTERNATIONAL INC","HGV/HILTON GRAND VACATIONS INC","FLR/FLUOR CORP","CMD/CANTEL MEDICAL CORP","TCBI/TEXAS CAPITAL BANCSHARES INC","CRNC/CERENCE INC","CXP/COLUMBIA PROPERTY REIT INC TRUST","RPAI/RETAIL PROPERTIES OF AMERICA REIT","ARNC/ARCONIC CORP","REZI/RESIDEO TECHNOLOGIES INC","MD/MEDNAX INC","NAVI/NAVIENT CORP","TWO/TWO HARBORS INVESTMENT REIT CORP","CNK/CINEMARK HOLDINGS INC","OI/O I GLASS INC","X/US STEEL CORP","PBF/PBF ENERGY INC CLASS A","CLNY/COLONY CAPITAL INC CLASS A","UFS/DOMTAR CORP","MAC/MACERICH REIT","SBGI/SINCLAIR BROADCAST GROUP INC CLASS","MFA/MFA FINANCIAL REIT INC","SITC/SITE CENTERS CORP","SVC/SERVICE PROPERTIES TRUST","RRC/RANGE RESOURCES CORP","RIG/TRANSOCEAN LTD","URBN/URBAN OUTFITTERS INC","AMCX/AMC NETWORKS CLASS A INC","IGT/INTERNATIONAL GAME TECHNOLOGY PLC","BGCP/BGC PARTNERS INC CLASS A","KOS/KOSMOS ENERGY LTD","PTEN/PATTERSON UTI ENERGY INC","AR/ANTERO RESOURCES CORP","CDEV/CENTENNIAL RESOURCE DEVELOPMENT IN","CHK/CHESAPEAKE ENERGY CORP","","","","","","","","","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":75,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[10,25,50,75,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-e9dbc522b39fd5341f07" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e9dbc522b39fd5341f07">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-06-14<\/caption>","data":[[""],["LSXMR/LIBERTY MEDIA RIGHTS EXP  JUNE COR"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-0b0e6bb962b499660a2a" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-0b0e6bb962b499660a2a">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-06-07<\/caption>","data":[["CHX/CHAMPIONX CORP",""],["WBC/WABCO HOLDINGS INC","APY/APERGY CORP"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-8f5b32d664c38465e7b2" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-8f5b32d664c38465e7b2">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-05-24<\/caption>","data":[["LSXMR/LIBERTY MEDIA RIGHTS EXP  JUNE COR"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-239163903acbff297fae" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-239163903acbff297fae">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-04-26<\/caption>","data":[["MSGS/MADISON SQUARE GARDEN SPORTS CORP","MSGE/MADISON SQUARE GARDEN ENTERTAINMEN"],["CY/CYPRESS SEMICONDUCTOR CORP","MSG/MADISON SQUARE GARDEN CLASS"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-e35e7498988273b6a557" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e35e7498988273b6a557">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-04-05<\/caption>","data":[["HWM/HOWMET AEROSPACE INC","REYN/REYNOLDS CONSUMER PRODUCTS INC","PPD/PPD INC","BILL/BILL COM HOLDINGS INC"],["S/SPRINT CORP","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":9,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[9,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-9fc9dc0ab757b04a8748" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-9fc9dc0ab757b04a8748">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-03-15<\/caption>","data":[[""],["ZAYO/ZAYO GROUP HOLDINGS INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-5623ce0cc1bd5455f9cf" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-5623ce0cc1bd5455f9cf">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-03-08<\/caption>","data":[["TT/TRANE TECHNOLOGIES PLC","BPYU/BROOKFIELD PROPERTY REIT INC CLASS"],["GDI/GARDNER DENVER HOLDINGS INC","BPR/BROOKFIELD PROPERTY REIT INC CLASS"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-8acd0afc7ec313455d34" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-8acd0afc7ec313455d34">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-02-09<\/caption>","data":[["WTRG/ESSENTIAL UTILITIES INC",""],["WTR/AQUA AMERICA INC","LPT/LIBERTY PROPERTY REIT TRUST"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-15a4b93310368054c4b8" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-15a4b93310368054c4b8">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-01-27<\/caption>","data":[[""],["WCG/WELLCARE HEALTHCARE PLANS INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-6fa3f4322dde3916aa63" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-6fa3f4322dde3916aa63">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-01-02<\/caption>","data":[[""],["GWR/GENESEE &amp; WYOMING INC CLASS A"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-e7538f919f415f25af8b" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e7538f919f415f25af8b">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-12-19<\/caption>","data":[["NVST/ENVISTA HOLDINGS CORP"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-911f9b11aef9f330aca6" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-911f9b11aef9f330aca6">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-12-12<\/caption>","data":[["J/JACOBS ENGINEERING GROUP INC","",""],["STI/SUNTRUST BANKS INC","JEC/JACOBS ENGINEERING GROUP INC","DISHR/DISH NETWORK CORP CLASS A"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":8,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ae7239ebc0379a20e0b5" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ae7239ebc0379a20e0b5">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-12-05<\/caption>","data":[["VIAC/VIACOMCBS INC CLASS B","VIACA/VIACOMCBS INC CLASS A",""],["CBS/CBS CORP CLASS B","VIAB/VIACOM INC CLASS B","VIA/VIACOM INC CLASS A"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":8,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-d7294c60df6a60160b09" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-d7294c60df6a60160b09">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-11-27<\/caption>","data":[["DISHR/DISH NETWORK CORP CLASS A"],["-/DISH NETWORK CORP CLASS A"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-507eb9382382e6603023" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-507eb9382382e6603023">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-11-21<\/caption>","data":[["-/DISH NETWORK CORP CLASS A"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-96289be78e080c352074" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-96289be78e080c352074">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-11-07<\/caption>","data":[["PEAK/HEALTHPEAK PROPERTIES INC","NLOK/NORTONLIFELOCK INC"],["HCP/HCP REIT INC","SYMC/SYMANTEC CORP"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ea8270229a5f04f763b5" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ea8270229a5f04f763b5">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-10-31<\/caption>","data":[[""],["MDSO/MEDIDATA SOLUTIONS INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-1f818cb1e233fab13e75" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-1f818cb1e233fab13e75">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-10-24<\/caption>","data":[["BKR/BAKER HUGHES COMPANY"],["BHGE/BAKER HUGHES CLASS A"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-b8ebdc283c5c98911634" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-b8ebdc283c5c98911634">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-10-10<\/caption>","data":[[""],["VSM/VERSUM MATERIALS INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-0ea9b730398fceedd8a2" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-0ea9b730398fceedd8a2">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-10-03<\/caption>","data":[["CRNC/CERENCE INC"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-4cc6ea7cc1e5b2ac9f73" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-4cc6ea7cc1e5b2ac9f73">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-09-26<\/caption>","data":[["SVC/SERVICE PROPERTIES TRUST","AVTR/AVANTOR INC","DT/DYNATRACE INC","GO/GROCERY OUTLET HOLDING CORP","CHNG/CHANGE HEALTHCARE INC","ADPT/ADAPTIVE BIOTECHNOLOGIES CORP","MDLA/MEDALLIA INC"],["HPT/HOSPITALITY PROPERTIES TRUST REIT","","","","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":12,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[10,12,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-834f9f12bfaa9d952f9c" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-834f9f12bfaa9d952f9c">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-09-19<\/caption>","data":[["",""],["TSS/TOTAL SYSTEM SERVICES INC","TRCO/TRIBUNE MEDIA COMPANY CLASS A"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-9d1bf848631c22280e17" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-9d1bf848631c22280e17">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-08-22<\/caption>","data":[["UI/UBIQUITI INC"],["UBNT/UBIQUITI NETWORKS INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-4c146e6c8a7878217d5f" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-4c146e6c8a7878217d5f">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-08-14<\/caption>","data":[["AM/ANTERO MIDSTREAM CORP","ATUS/ALTICE USA INC CLASS A","AVLR/AVALARA INC","AYX/ALTERYX INC CLASS A","BHGE/BAKER HUGHES CLASS A","BYND/BEYOND MEAT INC","CACI/CACI INTERNATIONAL INC CLASS A","CIEN/CIENA CORP","COLD/AMERICOLD REALTY TRUST","COUP/COUPA SOFTWARE INC","CREE/CREE INC","CTVA/CORTEVA INC","CUZ/COUSINS PROPERTIES REIT INC","CVNA/CARVANA CLASS A","DBX/DROPBOX INC CLASS A","ENTG/ENTEGRIS INC","ETSY/ETSY INC","FIVE/FIVE BELOW INC","FOX/FOX CORP CLASS B","FOXA/FOX CORP CLASS A","GH/GUARDANT HEALTH INC","GL/GLOBE LIFE INC","HAL/HALLIBURTON","HPE/HEWLETT PACKARD ENTERPRISE","HUBS/HUBSPOT INC","HZNP/HORIZON THERAPEUTICS PUBLIC PLC","IAA/IAA INC","IDA/IDACORP INC","JHG/JANUS HENDERSON GROUP PLC","KMPR/KEMPER CORP","LHX/L3HARRIS TECHNOLOGIES INC","LYFT/LYFT INC CLASS A","MCK/MCKESSON CORP","MDB/MONGODB INC CLASS A","MDSO/MEDIDATA SOLUTIONS INC","MTG/MGIC INVESTMENT CORP","NEWR/NEW RELIC INC","NXST/NEXSTAR MEDIA GROUP INC CLASS A","NYT/NEW YORK TIMES CLASS A","OLLI/OLLIES BARGAIN OUTLET HOLDINGS INC","PCTY/PAYLOCITY HOLDING CORP","PD/PAGERDUTY INC","PLAN/ANAPLAN INC","PLNT/PLANET FITNESS INC CLASS A","PRI/PRIMERICA INC","PXD/PIONEER NATURAL RESOURCE","REZI/RESIDEO TECHNOLOGIES INC","ROKU/ROKU INC CLASS A","SBGI/SINCLAIR BROADCAST GROUP INC CLASS","SMAR/SMARTSHEET INC CLASS A","SNX/SYNNEX CORP","SPOT/SPOTIFY TECHNOLOGY SA","STT/STATE STREET CORP","TREE/LENDINGTREE INC","TTD/TRADE DESK INC CLASS A","VSAT/VIASAT INC","WWD/WOODWARD INC","WWE/WORLD WRESTLING ENTERTAINMENT INC","ZS/ZSCALER INC"],["NOW/SERVICENOW INC","ADI/ANALOG DEVICES INC","FIS/FIDELITY NATIONAL INFORMATION SERV","ADSK/AUTODESK INC","EW/EDWARDS LIFESCIENCES CORP","ROP/ROPER TECHNOLOGIES INC","WP/WORLDPAY INC CLASS A","ROST/ROSS STORES INC","RHT/RED HAT INC","MCO/MOODYS CORP","VFC/VF CORP","WDAY/WORKDAY INC CLASS A","HRS/HARRIS CORP","LLL/L3 TECHNOLOGIES INC","FDC/FIRST DATA CORP CLASS A","DELL/DELL TECHNOLOGIES INC CLASS C","ULTI/ULTIMATE SOFTWARE GROUP INC","TMK/TORCHMARK CORP","DATA/TABLEAU SOFTWARE INC CLASS A","BMS/BEMIS INC","KDP/KEURIG DR PEPPER INC","CNDT/CONDUENT INC","ADNT/ADIENT PLC","TEX/TEREX CORP","WBT/WELBILT INC","WLL/WHITING PETROLEUM CORP","VC/VISTEON CORP","SNH/SENIOR HOUSING PROPERTIES TRUST RE","UNIT/UNITI GROUP INC","CNX/CNX RESOURCES CORP","QEP/QEP RESOURCES INC","SM/SM ENERGY","ACA/ARCOSA INC","NBR/NABORS INDUSTRIES LTD","RLGY/REALOGY HOLDINGS CORP","MIK/MICHAELS COMPANIES INC","RES/RPC INC","RVI/RETAIL VALUE INC","XOG/EXTRACTION OIL GAS INC","WFT/WEATHERFORD INTERNATIONAL PLC","","","","","","","","","","","","","","","","","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":64,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[10,25,50,64,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-be760dad48319ef5ffe4" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-be760dad48319ef5ffe4">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-04-24<\/caption>","data":[[""],["USG/USG CORP"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-f87558329f46731ab29a" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-f87558329f46731ab29a">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-04-04<\/caption>","data":[[""],["ARRS/ARRIS INTERNATIONAL PLC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-3120919787ac7ef88675" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-3120919787ac7ef88675">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-03-27<\/caption>","data":[[""],["-/APARTMENT INVESTMENT DUMMY STOCK D"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-4f0bca8773955bfe6bcd" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-4f0bca8773955bfe6bcd">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-03-20<\/caption>","data":[["MRNA/MODERNA INC"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ecee7573d61c0e590c1b" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ecee7573d61c0e590c1b">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-02-20<\/caption>","data":[["-/APARTMENT INVESTMENT DUMMY STOCK D"],["AHL/ASPEN INSURANCE HOLDINGS LTD"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-09c141de69270ffd2fb4" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-09c141de69270ffd2fb4">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-02-13<\/caption>","data":[["CVET/COVETRUS INC","",""],["ATHN/ATHENAHEALTH INC","DNB/DUN &amp; BRADSTREET CORP","NFX/NEWFIELD EXPLORATION"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":8,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-c282dbc15e88c2a60b07" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-c282dbc15e88c2a60b07">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-02-06<\/caption>","data":[["ESI/ELEMENT SOLUTIONS INC",""],["VVC/VECTREN CORP","PAH/PLATFORM SPECIALTY PRODUCTS CORP"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-4a1443c8464504365651" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-4a1443c8464504365651">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-01-23<\/caption>","data":[[""],["TSRO/TESARO INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-83f0b47aa7d363a7ef52" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-83f0b47aa7d363a7ef52">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-01-02<\/caption>","data":[["DELL/DELL TECHNOLOGIES INC CLASS C","CPRI/CAPRI HOLDINGS LTD",""],["DVMT/DELL TECHNOLOGIES CLASS V INC","SCG/SCANA CORP","KORS/MICHAEL KORS HOLDINGS LTD"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":8,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-917747fed3a21b6c05fb" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-917747fed3a21b6c05fb">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2018-12-26<\/caption>","data":[["ELAN/ELANCO ANIMAL HEALTH INC","ESTC/ELASTIC NV","SWI/SOLARWINDS CORP"],["","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":8,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-12f2f20de8320d59ed6c" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-12f2f20de8320d59ed6c">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2018-12-12<\/caption>","data":[[""],["FCEA/FOREST CITY REALTY REIT INC TRUST"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-b8089bf0146ce6f839b7" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-b8089bf0146ce6f839b7">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2018-11-29<\/caption>","data":[[""],["EGN/ENERGEN CORP"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-bf24e37d2f96964ec802" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-bf24e37d2f96964ec802">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2018-11-25<\/caption>","data":[[""],["COL/ROCKWELL COLLINS INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-e35d655ec356cb6f664f" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e35d655ec356cb6f664f">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2018-11-14<\/caption>","data":[["ETRN/EQUITRANS MIDSTREAM CORP"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-49459992e307341e6d9d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-49459992e307341e6d9d">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2018-11-07<\/caption>","data":[[""],["CA/CA INC"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+
+&nbsp;
+&nbsp;
+<hr />
+<p style="text-align: center;">Copyright &copy; 2023 SAS Data Analytics Pvt. Ltd. All rights reserved.</p>
+<p style="text-align: center;"><a href="https://github.com/stockviz/reports/issues">&#x1F41E;</a></p>
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
