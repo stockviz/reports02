@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+<meta name="date" content="2025-05-11" />
+
+<title>SPDR S&amp;P Global Infrastructure ETF</title>
+
+<script src="rmdlib/header-attrs-2.26/header-attrs.js"></script>
+<script src="rmdlib/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="rmdlib/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="rmdlib/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="rmdlib/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="rmdlib/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="rmdlib/navigation-1.1/tabsets.js"></script>
+<script src="rmdlib/accessible-code-block-0.0.1/empty-anchor.js"></script>
+<script src="rmdlib/htmlwidgets-1.6.2/htmlwidgets.js"></script>
+<link href="rmdlib/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="rmdlib/datatables-binding-0.32/datatables.js"></script>
+<link href="rmdlib/dt-core-1.13.6/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="rmdlib/dt-core-1.13.6/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="rmdlib/dt-core-1.13.6/js/jquery.dataTables.min.js"></script>
+<link href="rmdlib/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+<script src="rmdlib/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+<link href="rmdlib/font-awesome-6.4.0/css/all.min.css" rel="stylesheet" />
+<link href="rmdlib/font-awesome-6.4.0/css/v4-shims.min.css" rel="stylesheet" />
+<meta name="description" content="US ETF analysis. Sharpe, VaR, CVar, etc..." />
+<meta property="og:image" content="https://avatars3.githubusercontent.com/u/21966469?s=400&v=4" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">StockViz</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-globe"></span>
+     
+    Macro
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/macro/rp-bnd.html">Fixed Income</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/macro/rp-cur.html">Currencies</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/macro/rp-cmdy.html">Commodities</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-arrows-v"></span>
+     
+    52w H&amp;L
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/52wk-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/52wk-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-rocket"></span>
+     
+    ATH
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/ath-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/ath-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-magnet"></span>
+     
+    Drawdowns
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/drawdowns-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/drawdowns-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-train"></span>
+     
+    Streaks
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/streaks-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/streaks-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-hand-pointer-o"></span>
+     
+    Indian Indices
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-risk.html">Performance Metrics</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-IN.html">Index Changes</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-MKT-CAP.html">Classification Changes</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-syn.html">Synthetic Indices</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-vol-NIFTY.html">NIFTY Volatility</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-valuations.html">Valuations</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/results-IN.html">Result Dates</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-shopping-bag"></span>
+     
+    Funds
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports03/mf/rp-IN.html">Indian Mutual Funds</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-risk.html">US ETFs</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-sector.html">US Sector ETFs</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-country.html">Country $ ETFs</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-percent"></span>
+     
+    Fama-French
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-fama-french-industry.html">Industry</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-fama-french-factors.html">Factors</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-fama-french-regression.html">Regressions</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://stockviz.biz">
+    <span class="fa fa-home"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="https://stockviz.substack.com">
+    <span class="fa fa-envelope-o"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">SPDR S&amp;P Global Infrastructure ETF</h1>
+<h3 class="subtitle">Equity Portfolio Changes</h3>
+<h4 class="date">May 11, 2025</h4>
+
+</div>
+
+
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-e8aa2a9c2b00643f48a6" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e8aa2a9c2b00643f48a6">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-05-04<\/caption>","data":[["CASH_USD/U.S. Dollar"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-bfcc1f50052a58270a8f" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-bfcc1f50052a58270a8f">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-04-27<\/caption>","data":[[""],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-1b3cf489227accabaef4" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-1b3cf489227accabaef4">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-04-06<\/caption>","data":[["004360-KR/Sebang Co. Ltd","1816-HK/CGN Power Co. Ltd. Class H","CAAP/Corporacion America Airports S.A.","CASH_NOK/Norwegian Krone","CASH_USD/U.S. Dollar","DBI-AU/Dalrymple Bay Infrastructure Ltd.","ENGI-FR/ENGIE SA.","FRO-NO/Frontline Plc","PCG/PG&amp;E Corporation"],["2380-HK/China Power International Development Ltd","CEG/Constellation Energy Corporation","DTE/DTE Energy Company","HHFA-DE/Hamburger Hafen und Logistik AG","UGP/Ultrapar Participacoes S.A. Sponsored ADR","","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":14,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[10,14,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-8b7c5a7464df4fa527e8" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-8b7c5a7464df4fa527e8">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-03-30<\/caption>","data":[["",""],["ATCO/Atlas Corp.","CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-5334dc58d1dfa6d3a17b" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-5334dc58d1dfa6d3a17b">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-03-23<\/caption>","data":[[""],["V7YR-SG/SATS Ltd Rights 2023-21.03.23 For Shares"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-74c4800618aedbd74461" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-74c4800618aedbd74461">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-03-09<\/caption>","data":[["CASH_USD/U.S. Dollar","V7YR-SG/SATS Ltd Rights 2023-21.03.23 For Shares","",""],["ENGI-FR/ENGIE SA.","EOAN-DE/E.ON SE","ORSTED-DK/Orsted","VPK-NL/Royal Vopak NV"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":9,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[9,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-66fc315086a77b149ea4" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-66fc315086a77b149ea4">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-02-23<\/caption>","data":[[""],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-a0403b3673ae19c48374" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-a0403b3673ae19c48374">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-02-02<\/caption>","data":[[""],["IBE.D-ES/Iberdrola SA Rights 2022 - 19.01.23 For Shares"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-c9743b4f65b19cd3baba" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-c9743b4f65b19cd3baba">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-01-12<\/caption>","data":[["IBE.D-ES/Iberdrola SA Rights 2022 - 19.01.23 For Shares"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-3d5b9f43c503ad43ee26" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-3d5b9f43c503ad43ee26">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-01-05<\/caption>","data":[["CASH_USD/U.S. Dollar"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-e516c172282b670d1abd" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e516c172282b670d1abd">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-12-29<\/caption>","data":[[""],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-6d7f689af6879c489d5e" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-6d7f689af6879c489d5e">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-12-08<\/caption>","data":[[""],["ATL-IT/Atlantia S.p.A"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-3c5c14ffc25a47b7e959" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-3c5c14ffc25a47b7e959">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-11-23<\/caption>","data":[["CASH_USD/U.S. Dollar"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-31b9d7baa2f5a0dc3ff3" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-31b9d7baa2f5a0dc3ff3">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-11-17<\/caption>","data":[[""],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-d95dd8ae0659af5b41fb" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-d95dd8ae0659af5b41fb">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-10-27<\/caption>","data":[["CASH_USD/U.S. Dollar"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-fb94722cae3a084f16ec" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-fb94722cae3a084f16ec">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-10-20<\/caption>","data":[[""],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-11bd0980991d0a4e3edf" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-11bd0980991d0a4e3edf">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-10-06<\/caption>","data":[["ATCO/Atlas Corp.","CEG/Constellation Energy Corporation","DTE/DTE Energy Company","EBR/Centrais Eletricas Brasileiras SA-Eletrobras Sponsored ADR","EIX/Edison International","EURN-BE/Euronav NV","S58-SG/SATS Ltd","UGP/Ultrapar Participacoes S.A. Sponsored ADR"],["1816-HK/CGN Power Co. Ltd. Class H","8088-JP/Iwatani Corporation","995-HK/Anhui Expressway Company Limited Class H","","","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":13,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[10,13,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-209bacdcb16885d376e7" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-209bacdcb16885d376e7">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-09-29<\/caption>","data":[["CASH_USD/U.S. Dollar"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-e01efbb6e313d0cbdc15" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e01efbb6e313d0cbdc15">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-09-15<\/caption>","data":[[""],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-d78b0b8101ba7862206d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-d78b0b8101ba7862206d">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-09-01<\/caption>","data":[["CASH_USD/U.S. Dollar"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-0da515482e0d33c3f519" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-0da515482e0d33c3f519">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-08-25<\/caption>","data":[["",""],["CASH_CNY/China Renminbi","CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-00b20725f9c2eebf73d6" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-00b20725f9c2eebf73d6">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-08-18<\/caption>","data":[["CASH_CNY/China Renminbi"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-e0ba9d3863c00ef709de" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e0ba9d3863c00ef709de">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-08-04<\/caption>","data":[["","",""],["CASH_CNY/China Renminbi","IBE.D-ES/Iberdrola SA Rights 2022-21.07.22 For Shares","MNZS-GB/John Menzies plc"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":8,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-d6ed1a7b823773a8b83f" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-d6ed1a7b823773a8b83f">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-07-28<\/caption>","data":[["CASH_CNY/China Renminbi"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-682e846c07b5af343132" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-682e846c07b5af343132">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-07-21<\/caption>","data":[[""],["CASH_CNY/China Renminbi"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-8e88e5b48d3b80e28eb8" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-8e88e5b48d3b80e28eb8">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-07-14<\/caption>","data":[["IBE.D-ES/Iberdrola SA Rights 2022-21.07.22 For Shares"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-af3739f9b0b79a3b0321" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-af3739f9b0b79a3b0321">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-06-30<\/caption>","data":[["CASH_CNY/China Renminbi"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-2f2a13d242c6181e39c7" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-2f2a13d242c6181e39c7">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-05-26<\/caption>","data":[["CASH_USD/U.S. Dollar"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-8af0322655418b38da87" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-8af0322655418b38da87">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-05-19<\/caption>","data":[[""],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-b055cb6e44bde32177e2" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-b055cb6e44bde32177e2">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-03-31<\/caption>","data":[["2380-HK/China Power International Development Ltd","1816-HK/CGN Power Co. Ltd. Class H","995-HK/Anhui Expressway Company Limited Class H","GTT-FR/Gaztransport &amp; Technigaz SA","CASH_USD/U.S. Dollar","S59-SG/SIA Engineering Co. Ltd."],["CEG/Constellation Energy Corporation","EBR/Centrais Eletricas Brasileiras SA-Eletrobras Sponsored ADR","ENIA/Enel Americas S.A. Sponsored ADR","FSJ-GB/James Fisher and Sons plc","UGP/Ultrapar Participacoes S.A. Sponsored ADR",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":11,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[10,11,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-1f183bd040b98d8c6c81" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-1f183bd040b98d8c6c81">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-03-17<\/caption>","data":[["CASH_AUD/Australian Dollar","CASH_CAD/Canadian Dollar","CASH_CHF/Swiss Franc","CASH_CZK/Czech Koruna","CASH_DKK/Danish Krone","CASH_EUR/Euro","CASH_GBP/British Pounds","CASH_HKD/Hong Kong Dollar","CASH_JPY/Japanese Yen","CASH_NZD/New Zealand Dollar","CASH_SGD/Singapore Dollar"],["","","","","","","","","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":16,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[10,16,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-c889e2e708c155f4bc88" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-c889e2e708c155f4bc88">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-03-10<\/caption>","data":[["","","","","","","","","","",""],["CASH_CAD/Canadian Dollar","CASH_AUD/Australian Dollar","CASH_CHF/Swiss Franc","CASH_CZK/Czech Koruna","CASH_SGD/Singapore Dollar","CASH_DKK/Danish Krone","CASH_EUR/Euro","CASH_HKD/Hong Kong Dollar","CASH_GBP/British Pounds","CASH_NZD/New Zealand Dollar","CASH_JPY/Japanese Yen"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":16,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[10,16,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-95764a290a94e1d8b8cb" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-95764a290a94e1d8b8cb">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-02-17<\/caption>","data":[["",""],["CASH_USD/U.S. Dollar","SYD-AU/Sydney Airport"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-7743c41161c7542ffc72" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-7743c41161c7542ffc72">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-02-03<\/caption>","data":[["CEG/Constellation Energy Corporation"],["BMZQDX/IBERDROLA SA EUR0.75 RFD JANUA ORDINARY"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-bca74c7df29273d41926" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-bca74c7df29273d41926">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-01-27<\/caption>","data":[["BMZQDX/IBERDROLA SA EUR0.75 RFD JANUA ORDINARY"],["IBE.D-ES/Iberdrola SA Rights 2022-24.01.22 For Shares"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-e0bb6c80971a8c4f84e7" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e0bb6c80971a8c4f84e7">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-01-13<\/caption>","data":[["IBE.D-ES/Iberdrola SA Rights 2022-24.01.22 For Shares"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-1bc554075fd4df20d61e" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-1bc554075fd4df20d61e">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-10-07<\/caption>","data":[[""],["BNKHR5/TRANSURBAN GROUP NPV ORDINARY AUD"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-585e4fcf61b532e04de9" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-585e4fcf61b532e04de9">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-09-30<\/caption>","data":[["1052-HK/Yuexiu Transport Infrastructure Limited","1199-HK/COSCO SHIPPING Ports Limited","357-HK/Hainan Meilan International Airport Company Limited Class H","548-HK/Shenzhen Expressway Co. Ltd. Class H","836-HK/China Resources Power Holdings Co. Ltd.","BNKHR5/TRANSURBAN GROUP NPV ORDINARY AUD","CASH_USD/U.S. Dollar","ED/Consolidated Edison Inc."],["1816-HK/CGN Power Co. Ltd. Class H","CAAP/Corporacion America Airports S.A.","DTE/DTE Energy Company","MIC/Macquarie Infrastructure Holdings LLC","","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":13,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[10,13,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-d0b433a9e374b5f4310f" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-d0b433a9e374b5f4310f">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-09-23<\/caption>","data":[[""],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-c6b1172ce6f955b0c507" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-c6b1172ce6f955b0c507">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-09-16<\/caption>","data":[[""],["IPL-CA/Inter Pipeline Ltd."]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ce8db89fdf23eb5cb9ca" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ce8db89fdf23eb5cb9ca">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-08-26<\/caption>","data":[["CASH_USD/U.S. Dollar"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-1d212590d16c23cbe108" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-1d212590d16c23cbe108">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-07-29<\/caption>","data":[["",""],["CASH_CNY/China Renminbi","IBE.D-ES/Iberdrola SA Rights 2021-21.07.21 For Shares"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-da6da0b368346d721382" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-da6da0b368346d721382">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-07-22<\/caption>","data":[[""],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-e5b45fc53e1ef1a3d2bc" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e5b45fc53e1ef1a3d2bc">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-07-15<\/caption>","data":[["IBE.D-ES/Iberdrola SA Rights 2021-21.07.21 For Shares"],["BP68N8/IBERDROLA SA RIGHT"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-bc7eb5e157b68512d351" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-bc7eb5e157b68512d351">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-07-08<\/caption>","data":[["BP68N8/IBERDROLA SA RIGHT","CASH_CNY/China Renminbi"],["",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-dabef456bf55e3aa6611" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-dabef456bf55e3aa6611">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-07-02<\/caption>","data":[["DTM/DT Midstream Inc."],["CASH_CNY/China Renminbi"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-3297b0bf324ee11d41ba" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-3297b0bf324ee11d41ba">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-06-24<\/caption>","data":[["CASH_CNY/China Renminbi"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-71fd85ba2aab8669b257" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-71fd85ba2aab8669b257">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-06-17<\/caption>","data":[["964WKM90/STATE STREET INSTITUTIONAL LIQ STATE STR"],["SIG-GB/Signature Aviation Plc"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-58ce62c2eb9b6a408293" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-58ce62c2eb9b6a408293">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-06-10<\/caption>","data":[["",""],["964WKM90/STATE STREET INSTITUTIONAL LIQ STATE STR","AT-IT/ASTM S.p.A."]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-bf6cf137e709578a2bd5" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-bf6cf137e709578a2bd5">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-04-08<\/caption>","data":[["964WKM90/STATE STREET INSTITUTIONAL LIQ STATE STR"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-db73e36b4e905228dc5b" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-db73e36b4e905228dc5b">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-04-01<\/caption>","data":[["8088-JP/Iwatani Corporation","916-HK/China Longyuan Power Group Corp. Ltd. Class H","9706-JP/Japan Airport Terminal Co. Ltd.","CAAP/Corporacion America Airports S.A.","CIG/Companhia Energetica de Minas Gerais SA Sponsored ADR Pfd","DTE/DTE Energy Company","FSJ-GB/James Fisher and Sons plc","MNZS-GB/John Menzies plc",""],["1052-HK/Yuexiu Transport Infrastructure Limited","1199-HK/COSCO SHIPPING Ports Limited","357-HK/Hainan Meilan International Airport Company Limited Class H","371-HK/Beijing Enterprises Water Group Limited","548-HK/Shenzhen Expressway Co. Ltd. Class H","836-HK/China Resources Power Holdings Co. Ltd.","964WKM90/STATE STREET INSTITUTIONAL LIQ STATE STR","ED/Consolidated Edison Inc.","GTT-FR/Gaztransport &amp; Technigaz SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":14,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[10,14,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ced3d600455806bed670" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ced3d600455806bed670">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-02-25<\/caption>","data":[["964WKM90/STATE STREET INSTITUTIONAL LIQ STATE STR"],["70286227/STATE STREET INSTITUTIONAL LIQ STATE STR"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-29389b3b43c5388ed581" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-29389b3b43c5388ed581">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-02-11<\/caption>","data":[[""],["IBE.D-ES/Iberdrola SA Rights 2021-26.01.21 For Shares"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-641bf65bc136e10c74c5" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-641bf65bc136e10c74c5">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-01-14<\/caption>","data":[["IBE.D-ES/Iberdrola SA Rights 2021-26.01.21 For Shares"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-08243ee8789b023b11eb" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-08243ee8789b023b11eb">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-11-05<\/caption>","data":[["CASH_USD/U.S. Dollar"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-2353a17bd7f97949d1a2" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-2353a17bd7f97949d1a2">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-10-22<\/caption>","data":[[""],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-8f9963fa7a6778b890b4" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-8f9963fa7a6778b890b4">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-10-01<\/caption>","data":[["ORSTED-DK/Orsted","RWE-DE/RWE AG","NS8U-SG/Hutchison Port Holdings Trust","GTT-FR/Gaztransport &amp; Technigaz SA","EBR/Centrais Eletricas Brasileiras SA-Eletrobras Sponsored ADR","CASH_DKK/Danish Krone"],["CIG/Companhia Energetica de Minas Gerais SA Sponsored ADR Pfd","EURN-BE/Euronav NV","FE/FirstEnergy Corp.","PPL/PPL Corporation","S59-SG/SIA Engineering Co. Ltd.",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":11,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[10,11,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-e46c7a6c5166699083a0" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e46c7a6c5166699083a0">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-09-24<\/caption>","data":[["CASH_USD/U.S. Dollar"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-36aacc0e839746d403dd" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-36aacc0e839746d403dd">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-09-17<\/caption>","data":[[""],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-e41e8c3c958824c9db2e" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e41e8c3c958824c9db2e">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-08-27<\/caption>","data":[["CASH_USD/U.S. Dollar"],["Unassigned/SYDNEY AIRPORT ORDINARY AUD"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-9e6cfbfada9109241253" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-9e6cfbfada9109241253">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-08-20<\/caption>","data":[["Unassigned/SYDNEY AIRPORT ORDINARY AUD"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-672bdd7d56f966e63407" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-672bdd7d56f966e63407">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-08-13<\/caption>","data":[[""],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-b7b27ae9ba6db8444432" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-b7b27ae9ba6db8444432">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-08-06<\/caption>","data":[["CASH_USD/U.S. Dollar"],["BKWGV3/IBERDROLA SA RIGHT"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-932da01ee3625cbe126a" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-932da01ee3625cbe126a">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-07-30<\/caption>","data":[["",""],["CASH_USD/U.S. Dollar","NS8U-SG/Hutchison Port Holdings Trust"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-1de2e8a2d6d59ad5d05d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-1de2e8a2d6d59ad5d05d">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-07-23<\/caption>","data":[["CASH_USD/U.S. Dollar","","","",""],["CAAP/Corporacion America Airports S.A.","DTE/DTE Energy Company","EBR/Centrais Eletricas Brasileiras SA-Eletrobras Sponsored ADR","EIX/Edison International","GTT-FR/Gaztransport &amp; Technigaz SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":10,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-7e3c4d32cef25a6b2a2b" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-7e3c4d32cef25a6b2a2b">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-07-16<\/caption>","data":[[""],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-3d0fb76652063fe8cb18" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-3d0fb76652063fe8cb18">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-07-09<\/caption>","data":[["BKWGV3/IBERDROLA SA RIGHT"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-748f01b3cefec059ce96" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-748f01b3cefec059ce96">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-07-02<\/caption>","data":[["1052-HK/Yuexiu Transport Infrastructure Limited","357-HK/Hainan Meilan International Airport Company Limited Class H","548-HK/Shenzhen Expressway Co. Ltd. Class H","836-HK/China Resources Power Holdings Co. Ltd.","CASH_USD/U.S. Dollar","EOAN-DE/E.ON SE","EURN-BE/Euronav NV","PPL/PPL Corporation"],["","","","","","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":13,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[10,13,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ac8cb1232900dcb75dad" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ac8cb1232900dcb75dad">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-06-11<\/caption>","data":[[""],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ea59afc38b47240fdc71" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ea59afc38b47240fdc71">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-05-14<\/caption>","data":[["CASH_USD/U.S. Dollar"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-7fbc14b5b57d6c1b1af0" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-7fbc14b5b57d6c1b1af0">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-04-30<\/caption>","data":[[""],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-96df6651bdc3b6574ed4" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-96df6651bdc3b6574ed4">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-04-23<\/caption>","data":[["CASH_USD/U.S. Dollar"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-40b297e12f57e204b304" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-40b297e12f57e204b304">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-04-16<\/caption>","data":[[""],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-80d60ffb7bae5a3563c0" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-80d60ffb7bae5a3563c0">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-03-19<\/caption>","data":[["CASH_USD/U.S. Dollar"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-60bc8d24f3320e258102" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-60bc8d24f3320e258102">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-03-12<\/caption>","data":[[""],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-bc436ffece4e08c6af48" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-bc436ffece4e08c6af48">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-02-13<\/caption>","data":[[""],["BKY71B/IBERDROLA SA ORDINARY EUR"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-8119784aa4be9cc4fa9e" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-8119784aa4be9cc4fa9e">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-02-06<\/caption>","data":[["BKY71B/IBERDROLA SA ORDINARY EUR"],["IBE.D-ES/Iberdrola SA Rights 2020-23.01.20 For Shares"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-c283d5b531972468dc82" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-c283d5b531972468dc82">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-01-16<\/caption>","data":[["70286227/STATE STREET INSTITUTIONAL LIQ STATE STR","IBE.D-ES/Iberdrola SA Rights 2020-23.01.20 For Shares"],["85749246/STATE STREET INSTL US GOVERNME STIF USD","BJXCZK/IBERDROLA SA RIGHT"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-001c9e0ef43b8ab9615c" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-001c9e0ef43b8ab9615c">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-01-09<\/caption>","data":[["BJXCZK/IBERDROLA SA RIGHT"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-3e6705996c7a61b1f7e0" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-3e6705996c7a61b1f7e0">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-01-02<\/caption>","data":[["CASH_USD/U.S. Dollar","",""],["SIS-IT/Societa Iniziative Autostradali e Servizi S.p.A.","PPL/PPL Corporation","ENIC/Enel Chile SA Sponsored ADR"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":8,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-71fb35a20bd45dd1bda9" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-71fb35a20bd45dd1bda9">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-11-27<\/caption>","data":[["SIG-GB/Signature Aviation Plc"],["BBA-GB/BBA Aviation Plc"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-27ce10eac3a77ca72695" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-27ce10eac3a77ca72695">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-11-14<\/caption>","data":[[""],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-cbe1966f4009425ef3cc" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-cbe1966f4009425ef3cc">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-10-24<\/caption>","data":[["CASH_USD/U.S. Dollar"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-75f6840c7623d11a0a8d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-75f6840c7623d11a0a8d">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-10-10<\/caption>","data":[[""],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-9d89c9cc6b1d2003f457" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-9d89c9cc6b1d2003f457">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-10-03<\/caption>","data":[["1816-HK/CGN Power Co. Ltd. Class H","AWK/American Water Works Company Inc.","CASH_USD/U.S. Dollar","EIX/Edison International","FE/FirstEnergy Corp.","GEI-CA/Gibson Energy Inc.","GTT-FR/Gaztransport &amp; Technigaz SA","VPK-NL/Royal Vopak NV"],["EOAN-DE/E.ON SE","2-HK/CLP Holdings Limited","SRG-IT/Snam S.p.A.","ENG-ES/Enagas SA","836-HK/China Resources Power Holdings Co. Ltd.","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":13,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[10,13,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-9607769dacd37204e9fd" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-9607769dacd37204e9fd">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-09-26<\/caption>","data":[[""],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-44bd4c0f155399c67c88" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-44bd4c0f155399c67c88">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-09-05<\/caption>","data":[["CASH_USD/U.S. Dollar"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-bd69a355e7ef16e94a32" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-bd69a355e7ef16e94a32">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-08-29<\/caption>","data":[["",""],["CASH_USD/U.S. Dollar","ENIA.RT/Enel Americas SA Rights 2019-23.08.19 For ADRs"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ab8f90af6cdd16ba9864" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ab8f90af6cdd16ba9864">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-08-22<\/caption>","data":[["CASH_USD/U.S. Dollar"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ba24564a772d0cc1d3f3" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ba24564a772d0cc1d3f3">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-08-15<\/caption>","data":[["ENIA.RT/Enel Americas SA Rights 2019-23.08.19 For ADRs"],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-39c9d78c46c17c153a9d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-39c9d78c46c17c153a9d">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-08-01<\/caption>","data":[["CASH_USD/U.S. Dollar"],["IBE.D-ES/Iberdrola SA Rights 2019-18.07.19 For Shares"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-312a18cc691045f19d90" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-312a18cc691045f19d90">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-07-25<\/caption>","data":[["85749246/STATE STREET INSTL US GOVERNME STIF USD"],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-b88d584e5a2b9142edaf" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-b88d584e5a2b9142edaf">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-07-18<\/caption>","data":[["",""],["85749246/STATE STREET INSTL US GOVERNME STIF USD","ENIA.RT/Enel Americas S.A. Rights 2019-23.07.19 For ADRs"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-f88063c3be188f0e6c6c" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-f88063c3be188f0e6c6c">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-07-11<\/caption>","data":[["IBE.D-ES/Iberdrola SA Rights 2019-18.07.19 For Shares","ENIA.RT/Enel Americas S.A. Rights 2019-23.07.19 For ADRs","CASH_USD/U.S. Dollar"],["29274F13/ENEL AMERICAS SA RIGHT","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":8,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-5e45a383f3948d158b85" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-5e45a383f3948d158b85">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-07-03<\/caption>","data":[["29274F13/ENEL AMERICAS SA RIGHT"],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-b59589d04c689ad8b96d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-b59589d04c689ad8b96d">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-06-20<\/caption>","data":[["85749246/STATE STREET INSTL US GOVERNME STIF USD"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-fdd8caafe1fb69e5f2ab" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-fdd8caafe1fb69e5f2ab">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-06-13<\/caption>","data":[["CASH_USD/U.S. Dollar"],["85749246/STATE STREET INSTL US GOVERNME STIF USD"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-06bebbe64ebce741331c" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-06bebbe64ebce741331c">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-05-16<\/caption>","data":[[""],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-f133279dda942c1f3451" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-f133279dda942c1f3451">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-05-09<\/caption>","data":[["CASH_USD/U.S. Dollar"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-20b1dee5fdf7232ae121" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-20b1dee5fdf7232ae121">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-05-02<\/caption>","data":[[""],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-a0e129442feab6b936fb" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-a0e129442feab6b936fb">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-04-18<\/caption>","data":[["CASH_USD/U.S. Dollar"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-9ef4fcaa47d7883a81b7" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-9ef4fcaa47d7883a81b7">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-04-11<\/caption>","data":[[""],["CASH_USD/U.S. Dollar"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+
+&nbsp;
+&nbsp;
+<hr />
+<p style="text-align: center;">Copyright &copy; 2023 SAS Data Analytics Pvt. Ltd. All rights reserved.</p>
+<p style="text-align: center;"><a href="https://github.com/stockviz/reports/issues">&#x1F41E;</a></p>
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
