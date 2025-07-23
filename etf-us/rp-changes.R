@@ -34,25 +34,30 @@ if(is.null(changeLog)){
 } 
 
 changeLog <- etfs %>% full_join(changeLog) %>% 
-							mutate(CHANGE_DATE = ed, REPORT_UPDATE_DATE = st) %>% 
-							select(ETF, NAME, CHANGE_DATE, REPORT_UPDATE_DATE) %>% 
+							mutate(ETF = str_trim(ETF), CHANGE_DATE = ed, REPORT_UPDATE_DATE = st) %>% 
+							select(ETF, NAME, CHANGE_DATE, REPORT_UPDATE_DATE) %>%
+                            arrange(ETF) %>% 
 							as.data.frame()
 
 #print(changeLog)
-							
-for(i in 1:nrow(changeLog)){
+			
+changeLogLen <- nrow(changeLog)				
+for(i in 1:changeLogLen){
 	#print(changeLog[i,])
 
 	if(!is.na(changeLog$REPORT_UPDATE_DATE[i]) && is.Date(changeLog$REPORT_UPDATE_DATE[i]) && changeLog$REPORT_UPDATE_DATE[i] >= changeLog$CHANGE_DATE[i]) next
+
+    etf <- changeLog$ETF[i]
+    if(is.na(etf) || nchar(etf) == 0) next
 	
 	changeLog$REPORT_UPDATE_DATE[i] <- Sys.Date()
 	
-	print(paste("processing", changeLog$ETF[i]))
+	print(paste("processing", i, "/", changeLogLen, etf))
 	
 	tryCatch({
 		render("analysis/rp-changes.Rmd", 
-					output_file=paste0("rp-", changeLog$ETF[i], ".html"), 
-					params=list(etf = changeLog$ETF[i], name = changeLog$NAME[i]))
+					output_file=paste0("rp-", etf, ".html"), 
+					params=list(etf = etf, name = changeLog$NAME[i]))
 	}, error=function(e){print(e)})
 }
 

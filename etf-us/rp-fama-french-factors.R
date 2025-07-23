@@ -117,7 +117,7 @@ sorts <- list(teriles = c('HI_30', 'MED_40', 'LO_30'),
 			quintiles = c('HI_20', 'QNT_2', 'QNT_3', 'QNT_4', 'LO_20'),
 			deciles = c('HI_10', 'DEC_2', 'DEC_3', 'DEC_4', 'DEC_5', 'DEC_6', 'DEC_7', 'DEC_8', 'DEC_9', 'LO_10'))
 
-bDf <- sqlQuery(lconUs2, sprintf("select KEY_ID, RET, TIME_STAMP from FAMA_FRENCH_SIZE_DAILY where RET_TYPE='VWRD' and time_stamp >= '%s'", startDt))
+bDf <- sqlQuery(lconUs2, sprintf("select KEY_ID, RET, TIME_STAMP from FAMA_FRENCH_SIZE_DAILY where RET_TYPE='AVWRD' and time_stamp >= '%s'", startDt))
 
 ffdesc <- read.csv("fama-french-size.csv")
 

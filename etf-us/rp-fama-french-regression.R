@@ -37,7 +37,7 @@ maxDt <- sqlQuery(lconUs2, "select max(time_stamp) from FAMA_FRENCH_5_FACTOR_DAI
 
 maxRegDt <- sqlQuery(lconUs2, "select max(time_stamp) from FAMA_FRENCH_REGRESSION") [[1]]
 
-if(commandFlag != 'DELTA'){
+if(!is.na(commandFlag) && commandFlag != 'DELTA'){
 	if (!is.na(maxRegDt) && maxDt == maxRegDt) q()
 } 
 
@@ -60,7 +60,7 @@ doFfIndustry <- function(){
 	for(i in 1:length(indusIds)){
 		indusId <- indusIds[i]
 		
-		if(commandFlag == 'DELTA'){
+		if(!is.na(commandFlag) && commandFlag == 'DELTA'){
 			ctr <- sqlQuery(lconUs2, sprintf("select count(*) from FAMA_FRENCH_REGRESSION where KEY_ID = '%s' and KEY_TYPE = '%s'", indusId, 'FF_IND'))[[1]]
 			if (ctr > 0) next
 		}
@@ -96,7 +96,7 @@ doEtfs <- function(){
 	for(i in 1:nrow(etfs)){
 		ticker <- etfs$SYMBOL[i]
 		
-		if(commandFlag == 'DELTA'){
+		if(!is.na(commandFlag) && commandFlag == 'DELTA'){
 			ctr <- sqlQuery(lconUs2, sprintf("select count(*) from FAMA_FRENCH_REGRESSION where KEY_ID = '%s' and KEY_TYPE = '%s'", ticker, 'ETF'))[[1]]
 			if (ctr > 0) next
 		}

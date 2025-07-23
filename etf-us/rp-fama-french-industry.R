@@ -42,7 +42,7 @@ maxDt <- sqlQuery(lconUs2, "select max(time_stamp) from FAMA_FRENCH_INDUSTRY_49_
 
 bXts <- NULL
 for(betf in benchmarks){
-	bDf <- sqlQuery(lconUs2, sprintf("select ret, time_stamp from FAMA_FRENCH_SIZE_DAILY where KEY_ID='%s' and RET_TYPE='VWRD' and time_stamp >= '%s'", betf, startDt))
+	bDf <- sqlQuery(lconUs2, sprintf("select ret, time_stamp from FAMA_FRENCH_SIZE_DAILY where KEY_ID='%s' and RET_TYPE='AVWRD' and time_stamp >= '%s'", betf, startDt))
 	bXts <- merge.xts(bXts, xts(bDf[,1], bDf[,2]))
 }
 
