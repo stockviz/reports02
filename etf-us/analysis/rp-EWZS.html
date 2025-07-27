@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+<meta name="date" content="2025-07-23" />
+
+<title>iShares MSCI Brazil Small-Cap ETF</title>
+
+<script src="rmdlib/header-attrs-2.26/header-attrs.js"></script>
+<script src="rmdlib/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="rmdlib/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="rmdlib/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="rmdlib/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="rmdlib/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="rmdlib/navigation-1.1/tabsets.js"></script>
+<script src="rmdlib/accessible-code-block-0.0.1/empty-anchor.js"></script>
+<script src="rmdlib/htmlwidgets-1.6.2/htmlwidgets.js"></script>
+<link href="rmdlib/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="rmdlib/datatables-binding-0.32/datatables.js"></script>
+<link href="rmdlib/dt-core-1.13.6/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="rmdlib/dt-core-1.13.6/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="rmdlib/dt-core-1.13.6/js/jquery.dataTables.min.js"></script>
+<link href="rmdlib/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+<script src="rmdlib/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+<link href="rmdlib/font-awesome-6.4.0/css/all.min.css" rel="stylesheet" />
+<link href="rmdlib/font-awesome-6.4.0/css/v4-shims.min.css" rel="stylesheet" />
+<meta name="description" content="US ETF analysis. Sharpe, VaR, CVar, etc..." />
+<meta property="og:image" content="https://avatars3.githubusercontent.com/u/21966469?s=400&v=4" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">StockViz</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-globe"></span>
+     
+    Macro
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/macro/rp-bnd.html">Fixed Income</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/macro/rp-cur.html">Currencies</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/macro/rp-cmdy.html">Commodities</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-arrows-v"></span>
+     
+    52w H&amp;L
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/52wk-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/52wk-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-rocket"></span>
+     
+    ATH
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/ath-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/ath-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-magnet"></span>
+     
+    Drawdowns
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/drawdowns-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/drawdowns-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-train"></span>
+     
+    Streaks
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/streaks-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/streaks-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-hand-pointer-o"></span>
+     
+    Indian Indices
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-risk.html">Performance Metrics</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-IN.html">Index Changes</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-MKT-CAP.html">Classification Changes</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-syn.html">Synthetic Indices</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-vol-NIFTY.html">NIFTY Volatility</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-valuations.html">Valuations</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/results-IN.html">Result Dates</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-shopping-bag"></span>
+     
+    Funds
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports03/mf/rp-IN.html">Indian Mutual Funds</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-risk.html">US ETFs</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-sector.html">US Sector ETFs</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-country.html">Country $ ETFs</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-percent"></span>
+     
+    Fama-French
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-fama-french-industry.html">Industry</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-fama-french-factors.html">Factors</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-fama-french-regression.html">Regressions</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://stockviz.biz">
+    <span class="fa fa-home"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="https://stockviz.substack.com">
+    <span class="fa fa-envelope-o"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">iShares MSCI Brazil Small-Cap ETF</h1>
+<h3 class="subtitle">Equity Portfolio Changes</h3>
+<h4 class="date">July 23, 2025</h4>
+
+</div>
+
+
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-5e2bd759402d2537207b" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-5e2bd759402d2537207b">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2025-07-06<\/caption>","data":[[""],["BEEF11/MINERVA RTS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-5c93f08df844f244285c" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-5c93f08df844f244285c">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2025-06-29<\/caption>","data":[["BEEF11/MINERVA RTS SA",""],["BEEF9/MINERVA RIGHTS SA","-/MINERVA SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-80bc6d060239b0ecdf00" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-80bc6d060239b0ecdf00">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2025-06-15<\/caption>","data":[["BEEF3/MINERVA SA"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-920cb225cb7912a45a14" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-920cb225cb7912a45a14">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2025-06-08<\/caption>","data":[["COGN3/COGNA EDUCACAO SA","ORA/AURA MINERALS INC","BEEF9/MINERVA RIGHTS SA"],["BEEF3/MINERVA SA","CBAV3/COMPANHIA BRASILEIRA DE ALUMINIO",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":8,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-b79228d195aa0d0e30c2" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-b79228d195aa0d0e30c2">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2025-06-01<\/caption>","data":[["-/MINERVA SA  SUB RECEIPTS"],["BEEF1/MINERVA SA RIGHTS"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ae6b4b6fc71cc51e3e3b" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ae6b4b6fc71cc51e3e3b">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2025-05-11<\/caption>","data":[[""],["CRFB3/ATACADAO CARREFOUR SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-2e0e7553075e12232e3d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-2e0e7553075e12232e3d">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2025-05-04<\/caption>","data":[["BEEF1/MINERVA SA"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-959347a89b9a0ad69934" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-959347a89b9a0ad69934">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2025-03-16<\/caption>","data":[[""],["SMFT9/SMARTFIT ESCODA DE GINASTICA E DAN"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-671f4e2a54cb5a4ceb82" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-671f4e2a54cb5a4ceb82">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2025-03-09<\/caption>","data":[["CSAN3/COSAN INDUSTRIA E COMERCIO SA","CSNA3/COMPANHIA SIDERURGICA NACIONAL SA","HAPV3/HAPVIDA PARTICIPACOES E INVESTIMEN","HYPE3/HYPERMARCAS SA","INTR/INTER AND CO INC CLASS A","STNE/STONECO LTD CLASS A","","","","","","","",""],["AGRO3/BRASILAGRO","ARML3/ARMAC LOCACAO LOGISTICA E SERVICOS","CAML3/CAMIL ALIMENTOS SA","CEAB3/C A MODAS SA","COGN3/COGNA EDUCACAO SA","EZTC3/EZ TEC EMPREENDIMENTOS E PARTICIPA","HBSA3/HIDROVIAS DO BRASIL SA","JHSF3/JHSF PARTICIPACOES SA","LWSA3/LWSA SA","MILS3/MILLS ESTRUTURAS E SERVICOS DE ENG","ONCO3/ONCOCLINICAS DO BRASIL SERVICOS ME","RAPT4/RANDON PREF SA","SBFG3/GRUPO SBF SA","YDUQ3/YDUQS PARTICIPACOES SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":19,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[10,19,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-eb3d0fb8566001bcb4c8" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-eb3d0fb8566001bcb4c8">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2025-02-16<\/caption>","data":[["SMFT9/SMARTFIT ESCODA DE GINASTICA E DAN"],["SMFT1/SMARTFIT ESCOLA DE GINASTICA E DAN"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-5500adc945c9b59df1d4" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-5500adc945c9b59df1d4">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2025-01-12<\/caption>","data":[["SMFT1/SMARTFIT ESCOLA DE GINASTICA E DAN",""],["-/SMARTFIT ESCOLA DE GINASTICA E DAN","AMOB3/AUTOMOB PARTICIPACOES SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-e5896ed77d80dcad8605" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e5896ed77d80dcad8605">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2024-12-22<\/caption>","data":[["AMOB3/AUTOMOB PARTICIPACOES SA","-/SMARTFIT ESCOLA DE GINASTICA E DAN"],["",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-334894211bc60c711fcc" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-334894211bc60c711fcc">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2024-12-08<\/caption>","data":[["",""],["GMAT1/GRUPO MATEUS SA RIGHTS","LOGG3/LOG COMMERCIAL PROPERTIES SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-4d47fc9aadfa4d9d295e" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-4d47fc9aadfa4d9d295e">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2024-12-01<\/caption>","data":[["ASAI3/SENDAS DISTRIBUIDORA SA","BRKM5/BRASKEM PREF CLASS A SA","CRFB3/ATACADAO CARREFOUR SA","PAGS/PAGSEGURO DIGITAL LTD CLASS A",""],["AZUL4/AZUL PREF SA","MOVI3/MOVIDA PARTICIPACOES SA","SHUL4/SCHULZ PREF SA","JSLG3/JSL SA","JALL3/JALLES MACHADO SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":10,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-e9e20400474a94db15a0" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e9e20400474a94db15a0">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2024-11-17<\/caption>","data":[["GMAT1/GRUPO MATEUS SA RIGHTS"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-702af84f3e588f659cb8" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-702af84f3e588f659cb8">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2024-11-10<\/caption>","data":[[""],["HBSA1/HIDROVIAS DO BRASIL RIGHTS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-bd6c07b7ee9cc504417c" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-bd6c07b7ee9cc504417c">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2024-10-27<\/caption>","data":[[""],["AESB3/AES BRASIL SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-92ef28f21bce7e734921" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-92ef28f21bce7e734921">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2024-10-06<\/caption>","data":[["HBSA1/HIDROVIAS DO BRASIL RIGHTS SA"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-73194ce19f56d835118c" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-73194ce19f56d835118c">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2024-09-15<\/caption>","data":[["BRAV3/3R PETROLEUM OLEO E GAS SA"],["RRRP3/3R PETROLEUM OLEO E GAS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-a184de3214e1eeda461b" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-a184de3214e1eeda461b">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2024-09-08<\/caption>","data":[["LREN3/LOJAS RENNER SA","PAX/PATRIA INVESTMENTS LTD CLASS A","SGML/SIGMA LITHIUM CORP","VTEX/VTEX CLASS A","VINP/VINCI PARTNERS INVESTMENTS LTD CLA","AFYA/AFYA LTD"],["EMBR3/EMBRAER SA","PETZ3/PET CENTER COMERCIO E PARTCIPACOES","RANI3/IRANI SA","BRAP3/BRADESPAR SA","VVEO3/CM HOSPITALAR SA",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":11,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[10,11,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-e529f656601139c2358f" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e529f656601139c2358f">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2024-08-18<\/caption>","data":[[""],["CIEL3/CIELO SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-0094b450a30d14b88892" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-0094b450a30d14b88892">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2024-08-11<\/caption>","data":[["AZZA3/AZZAS  SA"],["ARZZ3/AREZZO INDUSTRIA E SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-45b51776378d01e18449" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-45b51776378d01e18449">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2024-08-04<\/caption>","data":[[""],["SOMA3/GRUPO DE MODA SOMA SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-694b12c2483b9ef296f0" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-694b12c2483b9ef296f0">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2024-07-28<\/caption>","data":[[""],["ENAT3/ENAUTA PARTICIPACOES SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ae845acebe96aefe7c35" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ae845acebe96aefe7c35">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2024-06-09<\/caption>","data":[["MGLU3/MAGAZINE LUIZA SA","LEVE3/MAHLE-METAL LEVE SA","CEAB3/C A MODAS SA","","","","",""],["AMBP3/AMBIPAR PARTICIPACOES E EMPREEND S","BRFS3/BRF BRASIL FOODS SA","COCE5/CIA ENERGETICA DO CEARA SERIES A P","DASA3/DIAGNOSTICOS DA AMERICA SA","MATD3/HOSPITAL MATER DEI SA","MYPK3/IOCHPE MAXION SA","ONCO1/ONCOCLINICAS DO BRASIL SERVICOS ME","TASA4/FORJAS TAURUS PREF SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":13,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[10,13,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ed4020ee92edb5abf2ca" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ed4020ee92edb5abf2ca">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2024-06-02<\/caption>","data":[["ONCO1/ONCOCLINICAS DO BRASIL SERVICOS ME"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-93e652d9c80e90e8f103" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-93e652d9c80e90e8f103">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2024-05-12<\/caption>","data":[[""],["ABCB10/BANCO ABC BRASIL RIGHTS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-9b165026d6d3a96ada48" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-9b165026d6d3a96ada48">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2024-03-03<\/caption>","data":[["JSLG3/JSL SA","POMO3/MARCOPOLO SA"],["BLAU3/BLAU FARMACEUTICA SA","LEVE3/MAHLE-METAL LEVE SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-488115c519cdb7b717fe" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-488115c519cdb7b717fe">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2024-02-25<\/caption>","data":[["ABCB10/BANCO ABC BRASIL RIGHTS SA"],["ABCB2/BCO ABC BRASIL RTS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-c7f014f18202a5b7c2a6" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-c7f014f18202a5b7c2a6">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2024-02-04<\/caption>","data":[[""],["GOLL4/GOL LINHAS AEREAS INTELIGENTES PRE"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-c6effa05d7433fdc6e62" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-c6effa05d7433fdc6e62">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2024-01-28<\/caption>","data":[[""],["CBAV9/COMPHANIA BRASILEIRA DE ALUMINIO R"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-d987ca4dd939a961b1d5" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-d987ca4dd939a961b1d5">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2024-01-07<\/caption>","data":[["ABCB2/BCO ABC BRASIL RTS SA"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-19a395799b811dc16cf2" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-19a395799b811dc16cf2">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-12-31<\/caption>","data":[["CBAV9/COMPHANIA BRASILEIRA DE ALUMINIO R"],["-/COMPANHIA BRASILEIRA DE ALUMINIO"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-c8d127ff801c0c6c6e5b" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-c8d127ff801c0c6c6e5b">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-12-24<\/caption>","data":[["-/COMPANHIA BRASILEIRA DE ALUMINIO",""],["ABCB10/BANCO ABC BRASIL SA","CBAV1/COMPANHIA BRASILEIRA DE ALUMINIO R"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-441c263d6d320d30cea9" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-441c263d6d320d30cea9">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-12-10<\/caption>","data":[["SRNA3/SERENA ENERGIA SA"],["MEGA3/OMEGA ENERGIA SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-9daeb4a9afc073b6b675" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-9daeb4a9afc073b6b675">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-12-03<\/caption>","data":[["RANI3/IRANI SA","SHUL4/SCHULZ PREF SA"],["BHIA3/GRUPO CASAS BAHIA SA",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-9289c62ecd67f62f268f" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-9289c62ecd67f62f268f">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-11-19<\/caption>","data":[["CBAV1/COMPANHIA BRASILEIRA DE ALUMINIO R"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-cd1dba0218062ceeb8dd" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-cd1dba0218062ceeb8dd">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-11-05<\/caption>","data":[[""],["ALSO3/ALIANSCE SONAE SHOPPING CENTERS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-451e02601aa212c7ba77" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-451e02601aa212c7ba77">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-10-29<\/caption>","data":[["ALOS3/ALLOS SA"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-a1e10a88383da1681a9a" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-a1e10a88383da1681a9a">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-10-08<\/caption>","data":[[""],["MRFG9/MARFRIG GLOBAL FOODS RTS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-5dfbd9f9e7dc6abd1e81" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-5dfbd9f9e7dc6abd1e81">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-10-01<\/caption>","data":[[""],["JALL1/JALLES MACHADO RTS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-a78758ec97cc50e4f0e0" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-a78758ec97cc50e4f0e0">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-09-24<\/caption>","data":[["BHIA3/GRUPO CASAS BAHIA SA","MRFG9/MARFRIG GLOBAL FOODS RTS SA"],["MRFG1/MARFRIG GLOBAL FOODS RTS SA","VIIA3/VIA SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-641039b37cc6bd206547" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-641039b37cc6bd206547">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-09-10<\/caption>","data":[[""],["AALR3/CENTRO DE IMAGEM DIAGNOSTICOS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-e33ac83b1ca767b42cb8" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e33ac83b1ca767b42cb8">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-09-03<\/caption>","data":[["DASA3/DIAGNOSTICOS DA AMERICA SA","FRAS3/FRAS-LE SA"],["",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-b521bfa58b806b0647df" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-b521bfa58b806b0647df">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-08-27<\/caption>","data":[["ABCB10/BANCO ABC BRASIL SA","MRFG1/MARFRIG GLOBAL FOODS RTS SA","JALL1/JALLES MACHADO RTS SA"],["PCAR3/COMPANHIA BRASILEIRA DE DISTRIBUIC","-/BANCO ABC BRASIL SA",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":8,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-28f1e5462c1b3ae18ea0" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-28f1e5462c1b3ae18ea0">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-08-20<\/caption>","data":[["-/BANCO ABC BRASIL SA"],["ABCB2/BCO ABC BRASIL RTS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-d319507db4e35403e8ce" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-d319507db4e35403e8ce">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-08-13<\/caption>","data":[[""],["BOAS3/BOA VISTA SERVICOS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-142551ef8a2f73975eed" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-142551ef8a2f73975eed">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-07-16<\/caption>","data":[[""],["ENBR3/ENERGIAS DO BRASIL SA BRAZIL"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-54a1b29438ac3cd77119" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-54a1b29438ac3cd77119">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-07-09<\/caption>","data":[["ABCB2/BCO ABC BRASIL RTS SA"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-e7b8cf2eddbd8fdbf3bf" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e7b8cf2eddbd8fdbf3bf">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-06-18<\/caption>","data":[[""],["RRRP9/3R PETROLEUM OLEO E GAS RTS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-aff6950398cbb58951a9" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-aff6950398cbb58951a9">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-06-04<\/caption>","data":[["","","","","",""],["ANIM3/GAEC EDUCACAO SA","QUAL3/QUALICORP SA","IGTI3/IGUATEMI SA","GOAU3/METALURGICA GERDAU SA","MLAS3/MULTILASER INDUSTRIAL SA","GUAR3/GUARARAPES SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":11,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[10,11,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-f5fec86373aa4d21c20f" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-f5fec86373aa4d21c20f">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-05-28<\/caption>","data":[["RRRP9/3R PETROLEUM OLEO E GAS RTS SA"],["RRRP1/3R PETROLEUM OLEO E GAS RIGHTS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-bc0583db6ef805c104ed" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-bc0583db6ef805c104ed">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-05-21<\/caption>","data":[[""],["LIGT3/LIGHT SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-a6879182893fdb2d7e50" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-a6879182893fdb2d7e50">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-05-07<\/caption>","data":[[""],["PARD3/INSTITUTO HERMES PARDINI SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-b21c841c95382943f497" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-b21c841c95382943f497">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-04-23<\/caption>","data":[["RRRP1/3R PETROLEUM OLEO E GAS RIGHTS SA"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-66ca0d43f7ad3ea974f7" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-66ca0d43f7ad3ea974f7">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-04-09<\/caption>","data":[[""],["BRPR3/BR PROPERTIES SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-f72197f70a6f0ffa52ce" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-f72197f70a6f0ffa52ce">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-03-05<\/caption>","data":[["BRFS3/BRF BRASIL FOODS SA","DIRR3/DIRECIONAL ENGENHARIA SA","AALR3/CENTRO DE IMAGEM DIAGNOSTICOS SA","GOAU3/METALURGICA GERDAU SA","","",""],["ENEV3/ENEVA SA","CPLE6/CIA PARANAENSE DE ENERGIA COPEL PR","CPLE11/CIA PARANAENSE DE ENERGIA UNT","CPLE3/CIA PARANAENSE DE ENERGIA COPEL","CVCB3/CVC BRASIL OPERADORA E AGENCIA DE","CSED3/CRUZEIRO DO SUL EDUCACIONAL SA","IFCM3/INFRACOMMERCE CXAAS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":12,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[10,12,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-716a170e4a6f72182704" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-716a170e4a6f72182704">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-01-15<\/caption>","data":[["",""],["AESB1/AES BRASIL ENERGIA RTS SA","BRML3/BR MALLS PARTICIPACOES SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-9a414876fb88766a82bb" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-9a414876fb88766a82bb">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2023-01-01<\/caption>","data":[[""],["SULA11/SUL AMERICA UNITS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-173d3653947def914d5c" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-173d3653947def914d5c">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-12-18<\/caption>","data":[["AESB1/AES BRASIL ENERGIA RTS SA"],["FLRY9/FLEURY SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-1a5940eaebc3a6231958" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-1a5940eaebc3a6231958">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-12-04<\/caption>","data":[["CURY3/CURY CONSTRTUTORA E INCORPORADORA","MILS3/MILLS ESTRUTURAS E SERVICOS DE ENG","ORVR3/ORIZON VALORIZACAO DE RESIDUOS SA","USIM5/USINAS SIDERURGICAS DE MINAS GERAI","VULC3/VULCABRAS AZALEIA SA"],["ASAI3/SENDAS DISTRIBUIDORA SA","LJQQ3/LOJAS QUERO-QUERO SA","CASH3/MELIUZ SA","AERI3/AERIS INDUSTRIA E COMERCIO DE EQUI",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":10,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-fe3f85c6d10d7d3d4af4" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-fe3f85c6d10d7d3d4af4">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-11-27<\/caption>","data":[["FLRY9/FLEURY SA"],["FLRY1/FLEURY RIGHTS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-20047f0ed66c47ca01a9" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-20047f0ed66c47ca01a9">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-11-06<\/caption>","data":[["FLRY1/FLEURY RIGHTS SA"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-c8cc20601d7f443c9b81" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-c8cc20601d7f443c9b81">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-10-09<\/caption>","data":[["",""],["AESB9/AES BRASIL ENERGIA SA","IFCM9/INFRACOMMERCE CXAAS RIGHTS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-3761794dfe373ac1329a" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-3761794dfe373ac1329a">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-09-25<\/caption>","data":[["IFCM9/INFRACOMMERCE CXAAS RIGHTS SA"],["-/INFRACOMMERCE SUB RECEIPTS"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-1987f2452b497cf31088" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-1987f2452b497cf31088">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-09-18<\/caption>","data":[["-/INFRACOMMERCE SUB RECEIPTS","AESB9/AES BRASIL ENERGIA SA"],["IFCM1/INFRACOMMERCE CXAAS RIGHTS SA","AESB1/AES BRASIL ENERGIA RTS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-06e73bfb0ca657091b5f" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-06e73bfb0ca657091b5f">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-08-21<\/caption>","data":[["IFCM1/INFRACOMMERCE CXAAS RIGHTS SA","AESB1/AES BRASIL ENERGIA RTS SA"],["",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-efaadfbe2182cc9de8a9" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-efaadfbe2182cc9de8a9">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-07-10<\/caption>","data":[[""],["LCAM3/COMPANHIA DE LOCACAO DAS AMERICAS"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-80e0a1c88a7e3599809a" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-80e0a1c88a7e3599809a">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-06-05<\/caption>","data":[["ALPA4/SAO PAULO ALPARGATAS PREF SA","RECV3/PETRORECONCAVO SA","PORT3/WILSON SONS HOLDING BRASIL SA","AGRO3/BRASILAGRO","TASA4/FORJAS TAURUS PREF SA","CPLE3/CIA PARANAENSE DE ENERGIA COPEL","JALL3/JALLES MACHADO SA","BRAP3/BRADESPAR SA"],["CEAB3/C A MODAS SA","CLSA3/CLEAR SALE SA","ESPA3/MPM CORPOREOS SA","SEQL3/SEQUOIA LOGISTICA E TRANSPORTES SA","","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":13,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[10,13,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-3ace940509d7f62c9eb0" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-3ace940509d7f62c9eb0">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-04-24<\/caption>","data":[[""],["GOLL2/GOL LINHAS AEREAS INTELIGENTES RIG"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-8639d85a02dfb40f8ab0" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-8639d85a02dfb40f8ab0">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-04-17<\/caption>","data":[["GOLL2/GOL LINHAS AEREAS INTELIGENTES RIG"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-804303e15f95c997df47" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-804303e15f95c997df47">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-04-03<\/caption>","data":[["AURE3/AUREN ENERGIA SA"],["CESP6/COMPANHIA ENERGETICA DE SAO PAULO"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-01a6e8b3fc7747cbe65a" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-01a6e8b3fc7747cbe65a">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-03-06<\/caption>","data":[["VIIA3/VIA SA"],["PRIO3/PETRO RIO SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-774e80be3ea066c66e55" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-774e80be3ea066c66e55">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-01-30<\/caption>","data":[["",""],["LAME4/LOJAS AMERICANAS PN REP1 PREF SA","LAME3/LOJAS AMERICANAS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-8defc378b4301514dfd9" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-8defc378b4301514dfd9">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2022-01-02<\/caption>","data":[["BRAP4/BRADESPAR PREF SA","MEGA3/OMEGA ENERGIA SA"],["OMGE3/OMEGA GERACAO SA",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-1e1734fdfd363dcaeceb" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-1e1734fdfd363dcaeceb">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-12-05<\/caption>","data":[["ARML3/ARMAC LOCACAO LOGISTICA E SERVICOS","BLAU3/BLAU FARMACEUTICA SA","CBAV3/COMPANHIA BRASILEIRA DE ALUMINIO","CLSA3/CLEAR SALE SA","CPLE11/CIA PARANAENSE DE ENERGIA UNT","CPLE6/CIA PARANAENSE DE ENERGIA COPEL PR","GGPS3/GPS PARTICIPACOES E EMPREENDIMENTO","IFCM3/INFRACOMMERCE CXAAS SA","IGTI3/JEREISSATI PARTICIPACOES SA","LAME3/LOJAS AMERICANAS SA","MATD3/HOSPITAL MATER DEI SA","MLAS3/MULTILASER INDUSTRIAL SA","ONCO3/ONCOCLINICAS DO BRASIL SERVICOS ME","SMFT3/SMARTFIT ESCOLA DE GINASTICA E DAN","TTEN3/TRES TENTOS AGROINDUSTRIAL SA","VVEO3/CM HOSPITALAR SA"],["BKBR3/BK BRASIL OPERACAO E ASSESSORIA A","EVEN3/EVEN CONSTRUTORA E INCORPORADORA S","TEND3/CONSTRUTORA TENDA SA","TRIS3/TRISUL SA","","","","","","","","","","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":21,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[10,21,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-01cc62ebfdc91ded818d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-01cc62ebfdc91ded818d">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-11-28<\/caption>","data":[["IGTI11/JEREISSATI PARTICIPACOES UNIT SA",""],["IGTA3/IGUATEMI EMPRESA SHOPPING CENTERS","JPSA3/JEREISSATI PARTICIPACOES SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-62594a1f07d830daedf0" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-62594a1f07d830daedf0">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-10-17<\/caption>","data":[[""],["CIDADE/CIDADE PREF"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ccb792936d191f9b4eda" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ccb792936d191f9b4eda">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-10-03<\/caption>","data":[["CIDADE/CIDADE PREF"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ddedf8786a0526cc9dd9" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ddedf8786a0526cc9dd9">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-09-26<\/caption>","data":[[""],["HGTX3/HERING TEXTIL"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-5db7d995116529dfd82d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-5db7d995116529dfd82d">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-09-05<\/caption>","data":[[""],["CVCB9/CVC BRASIL OPERADORA E AGENCIA DE"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-7f5bcd61b1f0a6c81de5" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-7f5bcd61b1f0a6c81de5">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-08-22<\/caption>","data":[["DXCO3/DEXCO SA"],["DTEX3/DURATEX SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-8a0c6fdf0d13465d8673" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-8a0c6fdf0d13465d8673">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-08-01<\/caption>","data":[["CVCB9/CVC BRASIL OPERADORA E AGENCIA DE"],["CVCB3.RI21/CVC BRASIL RIGHTS"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-e9a0bda54e02b65f4586" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e9a0bda54e02b65f4586">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-07-25<\/caption>","data":[["LAME4/LOJAS AMERICANAS PN REP1 PREF SA"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-6f1ec10303c5a1de1c42" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-6f1ec10303c5a1de1c42">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-07-11<\/caption>","data":[[""],["SMLE3/GOL LINHAS REDEEMABLE CLASS B"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-d81ee0b7a7b52dcfc375" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-d81ee0b7a7b52dcfc375">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-07-04<\/caption>","data":[["CVCB3.RI21/CVC BRASIL RIGHTS"],["LINX3/LINX SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ff5bf62393952cb24a23" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ff5bf62393952cb24a23">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-06-13<\/caption>","data":[["SMLE3/GOL LINHAS REDEEMABLE CLASS B"],["SMLS3/SMILES FIDELIDADE SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-f56e896869a15700b21d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-f56e896869a15700b21d">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-05-30<\/caption>","data":[["SULA11/SUL AMERICA UNITS SA","PETZ3/PET CENTER COMERCIO E PARTCIPACOES","GMAT3/GRUPO MATEUS SA","VAMO3/VAMOS LOCACAO DE CAMINHOES MAQUINA","HBSA3/HIDROVIAS DO BRASIL SA","ESPA3/MPM CORPOREOS SA","INTB3/INTELBRAS TELECOMUNICACOES SA","BOAS3/BOA VISTA SERVICOS SA","AERI3/AERIS INDUSTRIA E COMERCIO DE EQUI","SEQL3/SEQUOIA LOGISTICA E TRANSPORTES SA","RRRP3/3R PETROLEUM OLEO E GAS SA","CSED3/CRUZEIRO DO SUL EDUCACIONAL SA","CASH3/MELIUZ SA"],["AALR3/CENTRO DE IMAGEM DIAGNOSTICOS SA","AMAR3/LOJAS MARISA SA","SEER3/SER EDUCACIONAL SA","TGMA3/TEGMA GESTAO LOGISTICA SA","USIM5/USINAS SIDERURGICAS DE MINAS GERAI","WIZS3/WIZ SOLUCOES E CORRETAGEM DE SEGUR","","","","","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":18,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[10,18,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-8c20adeda19c253fb280" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-8c20adeda19c253fb280">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-05-16<\/caption>","data":[["",""],["-/GOL LINHAS AEREAS RIGHTS","ABCB10/BANCO ABC RIGHTS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-f096a4bf1cf1458d0b07" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-f096a4bf1cf1458d0b07">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-05-09<\/caption>","data":[["-/GOL LINHAS AEREAS RIGHTS"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-0e14dcf7cf64aca7910d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-0e14dcf7cf64aca7910d">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-04-04<\/caption>","data":[["AESB3/AES BRASIL SA","SBFG3/GRUPO SBF SA"],["CNTO3/GRUPO SBF SA","TIET11/AES TIETE ENERGIA UNITS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-58976565574d21cd8b56" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-58976565574d21cd8b56">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-03-14<\/caption>","data":[[""],["RLOG3/COSAN LOGISTICA SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-380327314863b54bd49b" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-380327314863b54bd49b">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-03-07<\/caption>","data":[["ASAI3/SENDAS DISTRIBUIDORA SA","MULT3/MULTIPLAN EMPREENDIMENTOS IMOBILIA","PCAR3/COMPANHIA BRASILEIRA DE DISTRIBUIC"],["BIDI11/BANCO INTER UNT SA","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":8,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-9f6b00280b0ee1095134" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-9f6b00280b0ee1095134">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-02-28<\/caption>","data":[["ABCB10/BANCO ABC RIGHTS SA"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-eac132fdb6a9b0ead65a" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-eac132fdb6a9b0ead65a">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-02-21<\/caption>","data":[[""],["ABCB2/BANCO ABC BRASIL RIGHTS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ea677e53efe20662b9c0" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ea677e53efe20662b9c0">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-01-17<\/caption>","data":[["ABCB2/BANCO ABC BRASIL RIGHTS SA"],["-/BANCO ABC BRASIL SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-2c15959d965a23de2441" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-2c15959d965a23de2441">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2021-01-10<\/caption>","data":[["-/BANCO ABC BRASIL SA"],["CVCB11/CVC BRASIL OPERADORA E AGENCIA DE"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-78e568f46b1abe51141b" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-78e568f46b1abe51141b">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-12-06<\/caption>","data":[["AMBP3/AMBIPAR PARTICIPACOES E EMPREEND S","CIEL3/CIELO SA","COGN3/COGNA EDUCACAO SA","IRBR3/IRB BRASIL RESSEGUROS SA","LJQQ3/LOJAS QUERO-QUERO SA","SOMA3/GRUPO DE MODA SOMA SA"],["BRAP4/BRADESPAR PREF SA","TOTS3/TOTVS SA","","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":11,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[10,11,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-007bb73fdf94d802f3e7" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-007bb73fdf94d802f3e7">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-11-15<\/caption>","data":[["CVCB11/CVC BRASIL OPERADORA E AGENCIA DE"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-61b65b566613c2013fa8" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-61b65b566613c2013fa8">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-09-27<\/caption>","data":[["SIMH3/SIMPAR SA",""],["JSLG3/JULIO SIMOES LOGISTICA SA","CVCB9/CVC BRASIL OPERADORA E AGENCIA DE"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-2b2f8ca4b56c496b1c43" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-2b2f8ca4b56c496b1c43">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-09-14<\/caption>","data":[[""],["BIDI13/BANCO INTER UNT RECEIPTS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-b53f377af2c0a655b892" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-b53f377af2c0a655b892">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-09-06<\/caption>","data":[["BRML3/BR MALLS PARTICIPACOES SA"],["VVAR3/VIA VAREJO SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-b5436af3d95c05d08d7d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-b5436af3d95c05d08d7d">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-08-30<\/caption>","data":[["BIDI13/BANCO INTER UNT RECEIPTS SA"],["-/BANCO INTER SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-f898af54eeefe964adee" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-f898af54eeefe964adee">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-08-23<\/caption>","data":[["CVCB9/CVC BRASIL OPERADORA E AGENCIA DE",""],["ABCB2/BANCO ABC BRASIL RIGHTS SA","BIDI12/BANCO INTER RIGHTS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-61ad2a4b3cf473a36f79" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-61ad2a4b3cf473a36f79">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-08-16<\/caption>","data":[["-/CVC Brasil Common Receipts","ABCB2/BANCO ABC BRASIL RIGHTS SA"],["CVCB1/CVC BRASIL AGENCIA DE VIAGENS SA R",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":7,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-7c48c08399acf65e562b" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-7c48c08399acf65e562b">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-07-19<\/caption>","data":[["CVCB1/CVC BRASIL AGENCIA DE VIAGENS SA R"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-2df29e81282838409841" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-2df29e81282838409841">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-07-12<\/caption>","data":[["BIDI12/BANCO INTER RIGHTS SA"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-99a7de37e683abd0c2f8" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-99a7de37e683abd0c2f8">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2020-06-07<\/caption>","data":[["BPAN4/BANCO PAN PREF SA","CEAB3/C A MODAS SA","COCE5/CIA ENERGETICA DO CEARA SERIES A P","EMBR3/EMBRAER SA","JPSA3/JEREISSATI PARTICIPACOES SA","LWSA3/LOCAWEB SERVICOS DE INTERNET SA","USIM5/USINAS SIDERURGICAS DE MINAS GERAI","VIVA3/VIVARA PARTICIPACOES SA"],["CPLE6/CIA PARANAENSE DE ENERGIA COPEL PR","ALPA4/SAO PAULO ALPARGATAS PREF SA","VULC3/VULCABRAS AZALEIA SA","DMMO3/DOMMO ENERGIA SA","","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":13,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[10,13,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-06f183e85bd51c8857f4" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-06f183e85bd51c8857f4">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-11-27<\/caption>","data":[["AMAR3/LOJAS MARISA SA","BIDI11/BANCO INTER UNT SA","CNTO3/GRUPO SBF SA","EVEN3/EVEN CONSTRUTORA E INCORPORADORA S","JHSF3/JHSF PARTICIPACOES SA","MDIA3/M DIAS BRANCO INDUSTRIA SA","TEND3/CONSTRUTORA TENDA SA","TGMA3/TEGMA GESTAO LOGISTICA SA","TRIS3/TRISUL SA"],["BIDI4/BANCO INTER PREF SA","VLID3/VALID SOLUCOES E SERVICOS SA","","","","","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":14,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[10,14,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-19ee049c01eca8583450" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-19ee049c01eca8583450">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-09-19<\/caption>","data":[[""],["TIET12/AES TIETE ENERGIA RIGHTS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ec6b1b44eb16819e09bd" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ec6b1b44eb16819e09bd">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-08-22<\/caption>","data":[["TIET12/AES TIETE ENERGIA RIGHTS SA"],["-/AES TIETE ENERGIA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-11f65eca5a4d4ff3e8ef" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-11f65eca5a4d4ff3e8ef">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-08-14<\/caption>","data":[["-/AES TIETE ENERGIA","ALSO3/ALIANSCE SONAE SHOPPING CENTERS SA","AZUL4/AZUL PREF SA","BIDI4/BANCO INTER PREF SA","FESA4/FERBASA PREF","JSLG3/JULIO SIMOES LOGISTICA SA","LCAM3/COMPANHIA DE LOCACAO DAS AMERICAS","PRIO3/PETRO RIO SA","SAPR11/CIA SANEAMENTO DO PARANA UNITS","UNIP6/UNIPAR PARTICIPACOES B PREF SA","YDUQ3/ESTACIO PARTICIPACOES SA"],["ALSC3/ALIANSCE SHOPPING CENTERS SA","COCE5/CIA ENERGETICA DO CEARA SERIES A P","ESTC3/ESTACIO PARTICIPACOES SA","SSBR3/SONAE SIERRA BRASIL SA","","","","","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":16,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[10,16,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-65dfd4cb2267c2334c7b" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-65dfd4cb2267c2334c7b">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-04-24<\/caption>","data":[["ENAT3/ENAUTA PARTICIPACOES SA"],["QGEP3/QGEP PARTICIPACOES SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-0198c0e077675b496d11" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-0198c0e077675b496d11">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-04-17<\/caption>","data":[[""],["ABCB10/BANCO ABC BRASIL PREF RECEIPTS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-91f9905a115531a94259" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-91f9905a115531a94259">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-04-03<\/caption>","data":[[""],["MPLU3/MULTIPLUS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-adf546c196d33a77139d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-adf546c196d33a77139d">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-03-13<\/caption>","data":[[""],["CGAS5/GAS DE SAO PAULO PREF"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-a41ebde13c8b572082a4" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-a41ebde13c8b572082a4">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-02-27<\/caption>","data":[[""],["POMO10/MARCOPOLO PREF RECEIPTS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-d6771f50ff3e8ad940bf" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-d6771f50ff3e8ad940bf">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-02-13<\/caption>","data":[["ABCB10/BANCO ABC BRASIL PREF RECEIPTS SA"],["ABCB2/BANCO ABC BRASIL PREF RIGHTS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-b44771c1bcbb84943d60" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-b44771c1bcbb84943d60">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-02-06<\/caption>","data":[["POMO10/MARCOPOLO PREF RECEIPTS SA"],["POMO2/MARCOPOLO PREF RIGHTS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-e2ed95eee856b273a120" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e2ed95eee856b273a120">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-01-16<\/caption>","data":[[""],["LOGG1/LOG COMMERCIAL PROPERTIES RIGHTS S"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-8e44f5d6945d697edf00" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-8e44f5d6945d697edf00">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-01-09<\/caption>","data":[["LOGG1/LOG COMMERCIAL PROPERTIES RIGHTS S"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-38e042d3c0b8e5ebfe97" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-38e042d3c0b8e5ebfe97">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2019-01-02<\/caption>","data":[["ABCB2/BANCO ABC BRASIL PREF RIGHTS SA"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-a89dbdab10c2c9f69d4d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-a89dbdab10c2c9f69d4d">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2018-12-26<\/caption>","data":[["LOGG3/LOG COMMERCIAL PROPERTIES SA"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-d24a9f72106912c7983f" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-d24a9f72106912c7983f">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2018-12-19<\/caption>","data":[["POMO2/MARCOPOLO PREF RIGHTS SA"],[""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ccae4f2cd7c70092e2b9" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ccae4f2cd7c70092e2b9">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2018-12-12<\/caption>","data":[[""],["MAGG3/MAGNESITA REFRATARIOS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-b0516ab98c2c9c7fd461" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-b0516ab98c2c9c7fd461">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2018-11-29<\/caption>","data":[["ENBR3/ENERGIAS DO BRASIL SA","ODPV3/ODONTOPREV SA","GRND3/GRENDENE SA","ENEV3/ENEVA SA"],["BTOW3/B2W COMPANHIA DIGITAL","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":9,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[9,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-e27741c16ba295ef594c" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e27741c16ba295ef594c">{"x":{"filter":"none","vertical":false,"caption":"<caption>On  2018-11-25<\/caption>","data":[["VVAR3/VIA VAREJO SA"],["VVAR11/VIA VAREJO UNITS SA"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Entries<\/th>\n      <th>Exits<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","autoWidth":true,"pageLength":6,"columnDefs":[{"width":"40%","visible":true,"targets":"_all"},{"name":"Entries","targets":0},{"name":"Exits","targets":1}],"order":[],"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+
+&nbsp;
+&nbsp;
+<hr />
+<p style="text-align: center;">Copyright &copy; 2023 SAS Data Analytics Pvt. Ltd. All rights reserved.</p>
+<p style="text-align: center;"><a href="https://github.com/stockviz/reports/issues">&#x1F41E;</a></p>
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
