@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+<meta name="date" content="2025-09-06" />
+
+<title>US Listed Country ETFs</title>
+
+<script src="risk/rmdlib/header-attrs-2.26/header-attrs.js"></script>
+<script src="risk/rmdlib/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="risk/rmdlib/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="risk/rmdlib/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="risk/rmdlib/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="risk/rmdlib/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="risk/rmdlib/navigation-1.1/tabsets.js"></script>
+<script src="risk/rmdlib/accessible-code-block-0.0.1/empty-anchor.js"></script>
+<link href="risk/rmdlib/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet" />
+<script src="risk/rmdlib/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<link href="risk/rmdlib/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="risk/rmdlib/datatables-binding-0.32/datatables.js"></script>
+<link href="risk/rmdlib/dt-core-1.13.6/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="risk/rmdlib/dt-core-1.13.6/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="risk/rmdlib/dt-core-1.13.6/js/jquery.dataTables.min.js"></script>
+<link href="risk/rmdlib/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+<script src="risk/rmdlib/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+<link href="risk/rmdlib/font-awesome-6.4.0/css/all.min.css" rel="stylesheet" />
+<link href="risk/rmdlib/font-awesome-6.4.0/css/v4-shims.min.css" rel="stylesheet" />
+<meta name="description" content="US ETF analysis. Sharpe, VaR, CVar, etc..." />
+<meta property="og:image" content="https://avatars3.githubusercontent.com/u/21966469?s=400&v=4" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">StockViz</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-globe"></span>
+     
+    Macro
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/macro/rp-bnd.html">Fixed Income</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/macro/rp-cur.html">Currencies</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/macro/rp-cmdy.html">Commodities</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-arrows-v"></span>
+     
+    52w H&amp;L
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/52wk-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/52wk-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-rocket"></span>
+     
+    ATH
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/ath-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/ath-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-magnet"></span>
+     
+    Drawdowns
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/drawdowns-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/drawdowns-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-train"></span>
+     
+    Streaks
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/streaks-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/streaks-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-hand-pointer-o"></span>
+     
+    Indian Indices
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-risk.html">Performance Metrics</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-IN.html">Index Changes</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-MKT-CAP.html">Classification Changes</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-industry.html">Industry Metrics</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-syn.html">Synthetic Indices</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-vol-NIFTY.html">NIFTY Volatility</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-valuations.html">Valuations</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/results-IN.html">Result Dates</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-shopping-bag"></span>
+     
+    Funds
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports03/mf/rp-IN.html">Indian Mutual Funds</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-risk.html">US ETFs</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-sector.html">US Sector ETFs</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-country.html">Country $ ETFs</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-percent"></span>
+     
+    Fama-French
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-fama-french-industry.html">Industry</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-fama-french-factors.html">Factors</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-fama-french-regression.html">Regressions</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://stockviz.biz">
+    <span class="fa fa-home"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="https://stockviz.substack.com">
+    <span class="fa fa-envelope-o"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">US Listed Country ETFs</h1>
+<h3 class="subtitle">StockViz</h3>
+<h4 class="date">September 6, 2025</h4>
+
+</div>
+
+
+<p><em>Reads: <a href="https://stockviz.biz/2021/07/11/the-united-states-of-etfs/">The United States of ETFs</a>, <a href="https://stockviz.biz/2021/07/18/indians-investing-abroad/">Indians Investing Abroad</a> </em></p>
+<div id="annual-returns" class="section level3">
+<h3>Annual Returns</h3>
+<p><img src="rp-country_files/figure-html/facet_print_chunk-1.png" width="1920" /></p>
+</div>
+<div id="daily-returns" class="section level3">
+<h3>Daily Returns</h3>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-754c8c4b21b1c8bc491c" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-754c8c4b21b1c8bc491c">{"x":{"filter":"none","vertical":false,"data":[["ARGT","EWA","EWO","EWK","EWZ","EWC","ECH","FXI","EDEN","EFNL","EWQ","EWG","GREK","EWH","INDA","EIDO","EIRL","EIS","EWI","EWJ","EWM","EWW","EWN","ENZL","NORW","EPU","EPHE","EPOL","QAT","KSA","EWS","EZA","EWY","EWP","EWD","EWL","EWT","THD","TUR","EWU","UAE","VNM","SPY","EEM"],["Global X MSCI Argentina ETF","iShares MSCI Australia ETF","iShares MSCI Austria ETF","iShares MSCI Belgium ETF","iShares MSCI Brazil ETF","iShares MSCI Canada ETF","iShares MSCI Chile ETF","iShares Trust - China Large-Cap ETF","iShares MSCI Denmark ETF","iShares MSCI Finland ETF","iShares MSCI France ETF","iShares MSCI Germany ETF","Global X MSCI Greece ETF","iShares MSCI Hong Kong ETF","iShares MSCI India ETF","iShares MSCI Indonesia ETF","iShares MSCI Ireland ETF","iShares MSCI Israel ETF","iShares MSCI Italy ETF","iShares MSCI Japan ETF","iShares MSCI Malaysia ETF","iShares MSCI Mexico ETF","iShares MSCI Netherlands ETF","iShares MSCI New Zealand ETF","Global X MSCI Norway ETF","iShares MSCI Peru and Global Exposure ETF","iShares MSCI Philippines ETF","iShares MSCI Poland ETF","iShares MSCI Qatar ETF","iShares MSCI Saudi Arabia ETF","iShares MSCI Singapore ETF","iShares MSCI South Africa ETF","iShares MSCI South Korea ETF","iShares MSCI Spain ETF","iShares MSCI Sweden ETF","iShares MSCI Switzerland ETF","iShares MSCI Taiwan ETF","iShares MSCI Thailand ETF","iShares MSCI Turkey ETF","iShares MSCI United Kingdom ETF","iShares MSCI UAE ETF","VanEck Vietnam ETF","SPDR S&amp;P 500 ETF Trust","iShares MSCI Emerging Markets ETF"],[-0.96,-0.7,-1.48,-2.15,-1.09,1.36,2.52,-0.6,-0.92,0.09,-0.79,-1.62,-1.06,-1.41,0.1,-2.31,-1.14,-0.6899999999999999,-1.05,-0.71,-0.64,0.88,-1.18,1.11,-1.43,4.33,-2.31,0.19,-1.3,-0.32,0.96,-1.01,-0.77,-1.12,-0.79,0.6899999999999999,-1,0.57,-5.09,-0.43,-1.69,0.63,0.03,-0.5],[-2.16,0.15,-3.78,-1.39,5.46,3.89,4.7,-0.1,-1.11,0.34,-2.27,-1.76,-2.98,-0.8,-1.83,-3.63,-2.16,4.03,-1.71,0.04,-0.87,2.47,-0.4,-0.46,-0.72,7.15,-1.41,-3.74,-1.82,-1.56,2.2,-0.6,2.6,-2.06,0.39,1.4,1.25,2.03,-5.01,-0.65,-2.8,4.72,2.14,0.42],[-6.95,1.13,-1.83,0.14,3.99,3.76,8.65,1.56,1.65,1.04,0.16,-2.34,-2.04,-0.28,0.11,0.28,-0.14,6.7,1.4,2.75,2.42,2.3,1.28,-0.93,0.95,9.91,-2.68,-4.18,-1.23,-1.27,4.12,-0.16,-0.5,1.74,1.45,3.78,-1.76,-0.03,-2.54,2.22,-4.48,9.699999999999999,2.67,0.75],[-5.93,3.34,6.75,4.08,5.8,8.380000000000001,8.23,3.43,-2.63,4.41,1.6,0.46,8.279999999999999,4.69,-4.38,3.43,1.32,2.68,7.38,8.68,4.83,5.68,-1.73,1.73,0.01,17.78,-3.84,5.1,7.3,-1.24,11.03,6.96,0.97,10.19,3.56,3.65,3.47,14.34,9.94,5.37,5.38,36.12,6.92,3.94],[0.59,18.14,24.89,15.94,18.14,23.2,17.65,16.36,8.869999999999999,16.94,9.210000000000001,13.67,37.76,31.5,3.61,11.97,15.96,28.21,24.97,19.61,11.18,24.45,15.41,7.03,16.37,32.42,3.29,17.91,11.87,-5.63,28.13,24,34.54,25.71,14.76,9.130000000000001,29.99,12.69,5.14,16.36,16.29,55.27,21.57,19.4],[3.23,5.24,44.9,18.31,6.42,16.73,34.14,27.98,-3.91,23.56,17.28,31.07,60.44,21.74,-1.52,-11.15,10.81,33.89,38.46,16.09,3.44,25.01,17.02,-3.32,18.61,31.66,3.04,45.25,7.53,-8.859999999999999,26.58,22.29,31.14,46.77,20.34,17.38,10.72,-6.22,-4.91,19.76,25.12,58.88,9.4,16.07],["<a href=\"/reports02/etf-us/risk/rp-ARGT.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EWA.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EWO.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EWK.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EWZ.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EWC.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-ECH.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-FXI.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EDEN.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EFNL.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EWQ.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EWG.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-GREK.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EWH.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-INDA.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EIDO.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EIRL.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EIS.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EWI.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EWJ.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EWM.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EWW.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EWN.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-ENZL.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-NORW.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EPU.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EPHE.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EPOL.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-QAT.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-KSA.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EWS.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EZA.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EWY.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EWP.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EWD.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EWL.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EWT.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-THD.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-TUR.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EWU.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-UAE.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-VNM.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-SPY.html\" target=\"_blank\">>>><\/a>","<a href=\"/reports02/etf-us/risk/rp-EEM.html\" target=\"_blank\">>>><\/a>"],["","<a href=\"/reports02/etf-us/analysis/rp-EWA.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EWO.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EWK.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EWZ.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EWC.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-ECH.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-FXI.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EDEN.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EFNL.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EWQ.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EWG.html\" target=\"_blank\">///<\/a>","","<a href=\"/reports02/etf-us/analysis/rp-EWH.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-INDA.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EIDO.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EIRL.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EIS.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EWI.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EWJ.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EWM.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EWW.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EWN.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-ENZL.html\" target=\"_blank\">///<\/a>","","<a href=\"/reports02/etf-us/analysis/rp-EPU.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EPHE.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EPOL.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-QAT.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-KSA.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EWS.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EZA.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EWY.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EWP.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EWD.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EWL.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EWT.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-THD.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-TUR.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EWU.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-UAE.html\" target=\"_blank\">///<\/a>","","<a href=\"/reports02/etf-us/analysis/rp-SPY.html\" target=\"_blank\">///<\/a>","<a href=\"/reports02/etf-us/analysis/rp-EEM.html\" target=\"_blank\">///<\/a>"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th><\/th>\n      <th><\/th>\n      <th>D5<\/th>\n      <th>D10<\/th>\n      <th>D20<\/th>\n      <th>D50<\/th>\n      <th>D100<\/th>\n      <th>D200<\/th>\n      <th>more<\/th>\n      <th>dig<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","pageLength":44,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5,6,7]},{"name":"TICKER","targets":0},{"name":"FUND","targets":1},{"name":"D5","targets":2},{"name":"D10","targets":3},{"name":"D20","targets":4},{"name":"D50","targets":5},{"name":"D100","targets":6},{"name":"D200","targets":7},{"name":"more","targets":8},{"name":"dig","targets":9}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,25,44,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+
+&nbsp;
+&nbsp;
+<hr />
+<p style="text-align: center;">Copyright &copy; 2023 SAS Data Analytics Pvt. Ltd. All rights reserved.</p>
+<p style="text-align: center;"><a href="https://github.com/stockviz/reports/issues">&#x1F41E;</a></p>
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
