@@ -208,7 +208,7 @@ createPlots <- function(isDelta = F){
 renderTickers <- function(){
 	if(length(plottedTickers) == 0){
 		plotFiles <- list.files(plotPath, pattern="*.png")
-		plottedTickers <- unique(unlist(lapply(strsplit(plotFiles, ".", fixed=T), `[[`, 1)))
+		plottedTickers <- unique(unlist(lapply(strsplit(plotFiles, ".", fixed=T), `[[`, 2)))
 	}
 	
 	for(i in 1:length(plottedTickers)){
@@ -218,7 +218,7 @@ renderTickers <- function(){
 		
 		print(iName)
 		tryCatch({
-			render("risk/rp-eq-in-risk.Rmd", output_file=paste0("rp-eq-in-", fName, ".html"), params=list(ticker = iName, fName = fName))
+			render("risk/rp-eq-in-risk.Rmd", output_file=paste0("in.", fName, ".html"), params=list(ticker = iName, fName = fName))
 		}, error=function(e){print(e)})
 	}
 }
@@ -227,8 +227,8 @@ renderTickers <- function(){
 #q()
 
 if(is.na(commandFlag) || is.null(commandFlag)){
-	print("creating plots...")
-	createPlots()
+	#print("creating plots...")
+	#createPlots()
 	print("rendering etfs...")
 	renderTickers()
 
