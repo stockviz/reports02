@@ -218,7 +218,7 @@ renderTickers <- function(){
 		
 		print(iName)
 		tryCatch({
-			render("risk/rp-eq-in-risk.Rmd", output_file=paste0("in.", fName, ".html"), params=list(ticker = iName, fName = fName))
+			render("risk/rp-eq-in-risk.Rmd", output_file=paste0(fName, ".html"), params=list(ticker = iName, fName = fName))
 		}, error=function(e){print(e)})
 	}
 }
