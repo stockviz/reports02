@@ -55,7 +55,13 @@ createSmaStat <- function(){
 		iDf1 <- dbGetQuery(pgCon, "select c, date_stamp from eod_adjusted_nse where ticker = $1", params = list(ticker))
 		iXts <- xts(iDf1[,1], iDf1[,2])
 		
+		if(year(first(index(iXts))) == year(Sys.Date())){
+		  print("skipping ipo")
+		  next
+		}
+		
 		iMinDate <- as.Date(sprintf("%d-01-01", year(first(index(iXts)))+1))
+		iMinDate <- max(iMinDate, as.Date('2010-01-01'))
 		iXts <- iXts[paste0(iMinDate, '/')]
 		
 		retDaily <- dailyReturn(iXts)
@@ -131,6 +137,8 @@ createPlots <- function(isDelta = F){
 			}
 			
 			tickerMinDate <- as.Date(sprintf("%d-01-01", year(first(index(iXts)))+1))
+			tickerMinDate <- max(tickerMinDate, as.Date('2010-01-01'))
+			
 			iXts <- iXts[paste0(tickerMinDate, '/')]
 
 			retDaily <- dailyReturn(iXts)
@@ -228,7 +236,7 @@ renderTickers <- function(){
 
 if(is.na(commandFlag) || is.null(commandFlag)){
 	#print("creating plots...")
-	#createPlots()
+	createPlots()
 	print("rendering etfs...")
 	renderTickers()
 
