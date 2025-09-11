@@ -52,7 +52,7 @@ createSmaStat <- function(){
 	for(i in 1:length(tickers)){
 		ticker <- tickers[i]
 		
-		iDf1 <- dbGetQuery(pgCon, "select c, date_stamp from eod_adjusted_nse where ticker = $1", params = list(ticker))
+		iDf1 <- dbGetQuery(pgCon, "select c, date_stamp from eod_adjusted_nse where ticker = $1 and date_stamp >= '2010-01-01'", params = list(ticker))
 		iXts <- xts(iDf1[,1], iDf1[,2])
 		
 		if(year(first(index(iXts))) == year(Sys.Date())){
@@ -61,7 +61,6 @@ createSmaStat <- function(){
 		}
 		
 		iMinDate <- as.Date(sprintf("%d-01-01", year(first(index(iXts)))+1))
-		iMinDate <- max(iMinDate, as.Date('2010-01-01'))
 		iXts <- iXts[paste0(iMinDate, '/')]
 		
 		retDaily <- dailyReturn(iXts)
@@ -128,7 +127,7 @@ createPlots <- function(isDelta = F){
 		}
 
 		tryCatch({
-			iDf1 <- dbGetQuery(pgCon, "select c, date_stamp from eod_adjusted_nse where ticker = $1", params = list(ticker))
+			iDf1 <- dbGetQuery(pgCon, "select c, date_stamp from eod_adjusted_nse where ticker = $1 and date_stamp >= '2010-01-01'", params = list(ticker))
 			iXts <- xts(iDf1[,1], iDf1[,2])
 			
 			if(year(first(index(iXts))) == year(Sys.Date())){
@@ -137,8 +136,7 @@ createPlots <- function(isDelta = F){
 			}
 			
 			tickerMinDate <- as.Date(sprintf("%d-01-01", year(first(index(iXts)))+1))
-			tickerMinDate <- max(tickerMinDate, as.Date('2010-01-01'))
-			
+
 			iXts <- iXts[paste0(tickerMinDate, '/')]
 
 			retDaily <- dailyReturn(iXts)
