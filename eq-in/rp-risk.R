@@ -61,6 +61,7 @@ createSmaStat <- function(){
 		}
 		
 		iMinDate <- as.Date(sprintf("%d-01-01", year(first(index(iXts)))+1))
+		iMinDate <- max(iMinDate, as.Date('2010-01-01'))
 		iXts <- iXts[paste0(iMinDate, '/')]
 		
 		retDaily <- dailyReturn(iXts)
