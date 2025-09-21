@@ -1,0 +1,98 @@
+---
+params:
+  ticker: ""
+  fName: ""
+subtitle: Equity Metrics
+editor_options:
+  chunk_output_type: console
+output: 
+  html_document:
+    theme: flatly
+    highlight: tango
+    self_contained: false
+    lib_dir: rmdlib
+    includes:
+        in_header: ../header.html
+        after_body: ../../footer.html
+---
+
+```{r, init_chunk, echo = FALSE, message = FALSE, warning = FALSE}
+createdDate <- gsub(" 0", " ",format(Sys.Date(), "%B %d, %Y"))
+idPath <- "../../"
+
+library('RODBC')
+library('tidyverse')
+library('lubridate')
+library('DT')
+
+library('scales')
+
+options(stringsAsFactors = FALSE)
+options("scipen"=100)
+
+ticker <- params$ticker
+fName <- params$fName
+
+#source("/mnt/hollandC/StockViz/R/config.r")
+source("/mnt/hollandr/config.r")
+
+
+bucketUrl <- "https://etf-us-risk-plots.stockviz.biz/"
+
+lcon <- odbcDriverConnect(sprintf("Driver={ODBC Driver 17 for SQL Server};Server=%s;Database=%s;Uid=%s;Pwd=%s;", ldbserver, ldbname, ldbuser, ldbpassword), case = "nochange", believeNRows = TRUE)
+
+tickerName <- sqlQuery(lcon, sprintf("select top 1 NAME from EQUITY_TICKER where symbol='%s'", ticker))[[1]]
+industryDf <- sqlQuery(lcon, sprintf("select basic_industry 
+                                   from nse_industry a 
+                                   where a.symbol = '%s' 
+                                   and a.time_stamp = (select max(b.time_stamp) 
+                                         from nse_industry b 
+                                         where b.symbol = a.symbol)", ticker))
+
+if(nrow(industryDf) > 0){
+  industry <- industryDf[[1]]
+  indusLink <- paste0('/reports01/index/industry/rp-', gsub("[^[:alnum:] ]| ", "", industry), '.html')
+  indusLinkTxt <- sprintf("[%s](%s)", industry, indusLink)
+} else {
+  indusLinkTxt <- ""
+}
+fanPlotName <- paste0(bucketUrl, fName, ".fan.png")
+cumPlotName <- paste0(bucketUrl, fName, ".cumret.png")
+smaCumPlotNameLocal <- paste0("plots/", fName, ".sma.cumret.png")
+smaCumPlotNameRemote <- paste0(bucketUrl, fName, ".sma.cumret.png")
+annPlotName <- paste0(bucketUrl, fName, ".annret.png")
+
+
+```
+
+---
+title: `r ticker`
+date: `r createdDate`
+---
+
+## `r tickerName`
+`r indusLinkTxt`
+
+### Annual Returns
+
+![](`r fanPlotName`)
+
+![](`r annPlotName`)
+
+### Cumulative Returns and Drawdowns
+
+![](`r cumPlotName`)
+
+```{r, plot_cumsma_chunk, results='asis', echo = FALSE, message = FALSE, warning = FALSE, fig.height=6, fig.width=12} 
+
+if(file.exists(smaCumPlotNameLocal)){
+	cat("\n\n")
+	cat("![](", smaCumPlotNameRemote, ")")
+	cat("\n\n")
+}
+cat("<br>")
+```
+
+
+
+

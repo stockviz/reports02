@@ -1,0 +1,124 @@
+---
+title: US Listed ETF Risk Metrics
+subtitle: StockViz
+editor_options:
+  chunk_output_type: console
+output: 
+  html_document:
+    theme: flatly
+    highlight: tango
+    self_contained: false
+    lib_dir: risk/rmdlib
+    toc: true
+    includes:
+        in_header: header.html
+        after_body: ../footer.html
+---
+
+```{r, init_chunk, echo = FALSE, message = FALSE, warning = FALSE}
+library('RODBC')
+library('tidyverse')
+library('DT')
+
+#source("C:/stockviz/r/config.r")
+source("/mnt/hollandr/config.r")
+
+options("scipen"=100)
+options(stringsAsFactors = FALSE)
+
+createdDate <- gsub(" 0", " ",format(Sys.Date(), "%B %d, %Y"))
+
+lcon <- odbcDriverConnect(sprintf("Driver={ODBC Driver 17 for SQL Server};Server=%s;Database=%s;Uid=%s;Pwd=%s;", ldbserver, ldbname, ldbuser, ldbpassword), case = "nochange", believeNRows = TRUE)
+lconUs2 <- odbcDriverConnect(sprintf("Driver={ODBC Driver 17 for SQL Server};Server=%s;Database=%s;Uid=%s;Pwd=%s;", ldbserver, "StockVizUs2", ldbuser, ldbpassword), case = "nochange", believeNRows = TRUE)
+	
+```
+
+---
+date: `r createdDate`
+---
+
+*Reads: [The United States of ETFs](https://stockviz.biz/2021/07/11/the-united-states-of-etfs/), [Indians Investing Abroad](https://stockviz.biz/2021/07/18/indians-investing-abroad/) *
+
+```{r, metrics_load_chunk, echo = FALSE, message = FALSE, warning = FALSE}
+maxDt <- sqlQuery(lconUs2, "select max(time_stamp) from EQ_CAPM") [[1]]
+statsDf <- sqlQuery(lconUs2, sprintf("select SYMBOL, ID, VAL from EQ_CAPM where time_stamp='%s'", maxDt)) 
+etfMetaDf <- sqlQuery(lcon, "select SYMBOL, FUND, ASSET_CLASS from ETF_META")
+
+dataDf <- statsDf %>% inner_join(etfMetaDf, by='SYMBOL') %>% select(SYMBOL, FUND, ASSET_CLASS, ID, VAL)
+
+```
+```{r, metrics_format_chunk, echo = FALSE, message = FALSE, warning = FALSE}
+tableList <- list()
+acs <- unique(dataDf$ASSET_CLASS)
+for(i in 1:length(acs)){
+	ac <- acs[i]
+	rankTibs <- dataDf %>%
+		filter(ASSET_CLASS == ac) %>%
+		pivot_wider(names_from=ID, values_from=VAL) %>% 
+		mutate_at(vars(-c(SYMBOL, FUND, ASSET_CLASS)), rank) %>%
+		mutate(SCORE = rowSums(across(-c(SYMBOL, FUND, ASSET_CLASS)))) %>%
+		select(-c(ASSET_CLASS)) %>%
+		arrange(desc(SCORE))
+	
+	rankTibs <- rankTibs %>%
+		mutate(more = ifelse(file.exists(sprintf("risk/rp-%s.html", gsub("[^[:alnum:] ]| ", "", SYMBOL))), 
+							sprintf('<a href="/reports02/etf-us/risk/rp-%s.html" target="_blank">>>></a>', gsub("[^[:alnum:] ]| ", "", SYMBOL)), 
+							""),
+			   dig = ifelse(file.exists(sprintf("analysis/rp-%s.html", gsub("[^[:alnum:] ]| ", "", SYMBOL))), 
+							sprintf('<a href="/reports02/etf-us/analysis/rp-%s.html" target="_blank">///</a>', gsub("[^[:alnum:] ]| ", "", SYMBOL)), 
+							""))
+		
+	tableColNames <- names(rankTibs)	
+	tableColNames[1] <- ""
+	tableColNames[2] <- ""
+	
+	tableList[[ac]] <- datatable(rankTibs, rownames = F, class = 'cell-border stripe', 
+							escape = c(rep(T, ncol(rankTibs)-2), rep(F, 2)), filter='none', 
+							colnames = tableColNames, 
+							options = list(dom = 't', pageLength = nrow(rankTibs)))
+}
+
+load("smaStats.Rdata")
+
+rankTibs <- smaStats %>% 
+	mutate_at(vars(-SYMBOL), rank) %>%
+	mutate(SCORE = rowSums(across(-SYMBOL))) %>%
+	inner_join(etfMetaDf, by='SYMBOL') %>%
+	relocate(FUND, .after = SYMBOL) %>%
+	relocate(ASSET_CLASS, .after = FUND) %>%
+	arrange(desc(SCORE))
+	
+rankTibs <- rankTibs %>%
+	mutate(more = ifelse(file.exists(sprintf("risk/rp-%s.html", gsub("[^[:alnum:] ]| ", "", SYMBOL))), 
+						sprintf('<a href="/reports02/etf-us/risk/rp-%s.html" target="_blank">>>></a>', gsub("[^[:alnum:] ]| ", "", SYMBOL)), 
+						""),
+		   dig = ifelse(file.exists(sprintf("analysis/rp-%s.html", gsub("[^[:alnum:] ]| ", "", SYMBOL))), 
+						sprintf('<a href="/reports02/etf-us/analysis/rp-%s.html" target="_blank">///</a>', gsub("[^[:alnum:] ]| ", "", SYMBOL)), 
+						""))
+	
+tableColNames <- names(rankTibs)	
+tableColNames[1] <- ""
+tableColNames[2] <- ""
+tableColNames[3] <- ""
+
+smaDt <- datatable(rankTibs, rownames = F, class = 'cell-border stripe', 
+				escape = c(rep(T, ncol(rankTibs)-3), rep(F, 3)), filter='none', 
+				colnames = tableColNames, 
+				options = list(dom = 't', pageLength = nrow(rankTibs)))					
+```
+
+```{r, metrics_print_chunk, echo = FALSE, results='asis', message = FALSE, warning = FALSE}
+
+cat("\n\n### ", names(tableList)[1], "\n\n")
+htmltools::tagList(tableList[[1]])
+
+cat("\n\n### ", names(tableList)[2], "\n\n")
+htmltools::tagList(tableList[[2]])
+
+cat("\n\n### ", names(tableList)[3], "\n\n")
+htmltools::tagList(tableList[[3]])
+
+cat("\n\n### Simple Moving Average Stats \n\n")
+htmltools::tagList(smaDt)
+
+```
