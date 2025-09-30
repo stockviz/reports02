@@ -218,38 +218,60 @@ createPlots <- function(isDelta = F){
                                     and ITEM_KEY like 'eps%%'",
 		                                ticker))
 		  
-		  p1 <- epsDf |> filter(IS_CONSOLIDATED == 1) |>
-		    select(PERIOD_END, IS_AUDITED, ITEM_KEY, ITEM_VAL) |>
-		    group_by(PERIOD_END, ITEM_KEY) |>
-		    summarise(VAL = mean(ITEM_VAL)) |> 
-		    ggplot(aes(x=PERIOD_END, y=VAL, color = ITEM_KEY)) +
-		    theme_economist() +
-		    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-		    scale_color_viridis_d() +
-		    geom_line() +
-		    scale_x_date(date_breaks = '3 months', date_labels = '%Y-%b') +
-		    labs(x = '', y = 'EPS (Rs.)', color='', subtitle = 'Consolidated')
+		  p1 <- NULL
+		  p2 <- NULL
 		  
-      p2 <- epsDf |> filter(IS_CONSOLIDATED == 0) |>
-		      select(PERIOD_END, IS_AUDITED, ITEM_KEY, ITEM_VAL) |>
-		      group_by(PERIOD_END, ITEM_KEY) |>
-		      summarise(VAL = mean(ITEM_VAL)) |> 
-		      ggplot(aes(x=PERIOD_END, y=VAL, color = ITEM_KEY)) +
-		        theme_economist() +
-		        theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-		        scale_color_viridis_d() +
-		        geom_line() +
-		        scale_x_date(date_breaks = '3 months', date_labels = '%Y-%b') +
-		        labs(x = '', y = 'EPS (Rs.)', color='',
-		             subtitle = 'Non-Consolidated')
-		        
-      p1 / p2 + plot_layout(axes = "collect") + 
-        plot_annotation(title = sprintf("%s Earnings Per Share", ticker), 
-                        subtitle = sprintf("%s:%s", min(epsDf$PERIOD_END), max(epsDf$PERIOD_END)),
-                        theme = theme_economist(),
-                        caption = '@StockViz')
+		  if(nrow(epsDf |> filter(IS_CONSOLIDATED == 1)) > 0){
+  		  p1 <- epsDf |> filter(IS_CONSOLIDATED == 1) |>
+  		    select(PERIOD_END, IS_AUDITED, ITEM_KEY, ITEM_VAL) |>
+  		    group_by(PERIOD_END, ITEM_KEY) |>
+  		    summarise(VAL = mean(ITEM_VAL)) |> 
+  		    ggplot(aes(x=PERIOD_END, y=VAL, color = ITEM_KEY)) +
+  		    theme_economist() +
+  		    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  		    scale_color_viridis_d() +
+  		    geom_line() +
+  		    scale_x_date(date_breaks = '3 months', date_labels = '%Y-%b') +
+  		    labs(x = '', y = 'EPS (Rs.)', color='', title = 'Consolidated')
+		  }
 		  
-      ggsave(sprintf("%s/%s.eps.png", plotPath, fName), width=12, height=12)
+		  if(nrow(epsDf |> filter(IS_CONSOLIDATED == 0)) > 0){
+        p2 <- epsDf |> filter(IS_CONSOLIDATED == 0) |>
+  		      select(PERIOD_END, IS_AUDITED, ITEM_KEY, ITEM_VAL) |>
+  		      group_by(PERIOD_END, ITEM_KEY) |>
+  		      summarise(VAL = mean(ITEM_VAL)) |> 
+  		      ggplot(aes(x=PERIOD_END, y=VAL, color = ITEM_KEY)) +
+  		        theme_economist() +
+  		        theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  		        scale_color_viridis_d() +
+  		        geom_line() +
+  		        scale_x_date(date_breaks = '3 months', date_labels = '%Y-%b') +
+  		        labs(x = '', y = 'EPS (Rs.)', color='', title = 'Non-Consolidated')
+		  }
+		  
+		  if(!is.null(p1) && !is.null(p2)){
+        p1 / p2 + plot_layout(axes = "collect") + 
+          plot_annotation(title = sprintf("%s Quarterly Earnings Per Share", ticker), 
+                          subtitle = sprintf("%s:%s", min(epsDf$PERIOD_END), max(epsDf$PERIOD_END)),
+                          theme = theme_economist(),
+                          caption = '@StockViz')
+  		  
+        ggsave(sprintf("%s/%s.eps.png", plotPath, fName), width=12, height=12)
+		  } else if(!is.null(p1)){
+		    p1 + plot_annotation(title = sprintf("%s Quarterly Earnings Per Share", ticker), 
+		                      subtitle = sprintf("%s:%s", min(epsDf$PERIOD_END), max(epsDf$PERIOD_END)),
+		                      theme = theme_economist(),
+		                      caption = '@StockViz')
+		    
+		    ggsave(sprintf("%s/%s.eps.png", plotPath, fName), width=12, height=6)
+		  } else if(!is.null(p2)){
+		    p2 + plot_annotation(title = sprintf("%s Quarterly Earnings Per Share", ticker), 
+		                         subtitle = sprintf("%s:%s", min(epsDf$PERIOD_END), max(epsDf$PERIOD_END)),
+		                         theme = theme_economist(),
+		                         caption = '@StockViz')
+		    
+		    ggsave(sprintf("%s/%s.eps.png", plotPath, fName), width=12, height=6)
+		  }
 		  
 	  }, error=function(e){print(e)})
 	}
