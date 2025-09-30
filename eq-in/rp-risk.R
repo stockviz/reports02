@@ -2,6 +2,7 @@ library('RODBC')
 library('RPostgres')
 library('tidyverse')
 library('rmarkdown')
+library('patchwork')
 
 #Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/Pandoc")
 #source("/mnt/hollandC/StockViz/R/config.r")
@@ -127,6 +128,7 @@ createPlots <- function(isDelta = F){
 			next
 		}
 
+		#price charts
 		tryCatch({
 			iDf1 <- dbGetQuery(pgCon, "select c, date_stamp from eod_adjusted_nse where ticker = $1 and date_stamp >= '2010-01-01'", params = list(ticker))
 			iXts <- xts(iDf1[,1], iDf1[,2])
@@ -207,6 +209,49 @@ createPlots <- function(isDelta = F){
 			
 			plottedTickers <- c(plottedTickers, ticker)
 		}, error=function(e){print(e)})
+		
+		#fundamental charts
+		tryCatch({
+		  epsDf <- sqlQuery(lcon, sprintf("select * from FUNDA_XBRL 
+                                    where symbol = '%s' 
+                                    and period_type='quarterly'
+                                    and ITEM_KEY like 'eps%%'",
+		                                ticker))
+		  
+		  p1 <- epsDf |> filter(IS_CONSOLIDATED == 1) |>
+		    select(PERIOD_END, IS_AUDITED, ITEM_KEY, ITEM_VAL) |>
+		    group_by(PERIOD_END, ITEM_KEY) |>
+		    summarise(VAL = mean(ITEM_VAL)) |> 
+		    ggplot(aes(x=PERIOD_END, y=VAL, color = ITEM_KEY)) +
+		    theme_economist() +
+		    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+		    scale_color_viridis_d() +
+		    geom_line() +
+		    scale_x_date(date_breaks = '3 months', date_labels = '%Y-%b') +
+		    labs(x = '', y = 'EPS (Rs.)', color='', subtitle = 'Consolidated')
+		  
+      p2 <- epsDf |> filter(IS_CONSOLIDATED == 0) |>
+		      select(PERIOD_END, IS_AUDITED, ITEM_KEY, ITEM_VAL) |>
+		      group_by(PERIOD_END, ITEM_KEY) |>
+		      summarise(VAL = mean(ITEM_VAL)) |> 
+		      ggplot(aes(x=PERIOD_END, y=VAL, color = ITEM_KEY)) +
+		        theme_economist() +
+		        theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+		        scale_color_viridis_d() +
+		        geom_line() +
+		        scale_x_date(date_breaks = '3 months', date_labels = '%Y-%b') +
+		        labs(x = '', y = 'EPS (Rs.)', color='',
+		             subtitle = 'Non-Consolidated')
+		        
+      p1 / p2 + plot_layout(axes = "collect") + 
+        plot_annotation(title = sprintf("%s Earnings Per Share", ticker), 
+                        subtitle = sprintf("%s:%s", min(epsDf$PERIOD_END), max(epsDf$PERIOD_END)),
+                        theme = theme_economist(),
+                        caption = '@StockViz')
+		  
+      ggsave(sprintf("%s/%s.eps.png", plotPath, fName), width=12, height=12)
+		  
+	  }, error=function(e){print(e)})
 	}
 	smaStats <- smaStats[-1,]
 	save(smaStats, file="smaStats.Rdata")
