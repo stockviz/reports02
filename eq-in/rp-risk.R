@@ -3,6 +3,15 @@ library('RPostgres')
 library('tidyverse')
 library('rmarkdown')
 library('patchwork')
+library('geomtextpath')
+library('quantmod')
+library('PerformanceAnalytics')
+library('lubridate')
+library('ggthemes')
+library('reshape2')
+library('viridis')
+#library('DT')
+library('ggrepel')
 
 #Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/Pandoc")
 #source("/mnt/hollandC/StockViz/R/config.r")
@@ -18,16 +27,6 @@ idPath <- "../"
 
 args = commandArgs(TRUE)
 commandFlag <- args[1]
-
-library('quantmod')
-library('PerformanceAnalytics')
-
-library('lubridate')
-library('ggthemes')
-library('reshape2')
-library('viridis')
-#library('DT')
-library('ggrepel')
 
 options("scipen"=100)
 options(stringsAsFactors = FALSE)
@@ -212,6 +211,170 @@ createPlots <- function(isDelta = F){
 		
 		#fundamental charts
 		tryCatch({
+		  revenueDf <- sqlQuery(lcon, sprintf("select * from FUNDA_XBRL 
+                                    where symbol = '%s' 
+                                    and period_type='quarterly'
+                                    and ITEM_KEY = 'EBIT'",
+		                                      ticker))
+		  
+		  p1 <- NULL
+		  p2 <- NULL
+		  
+		  if(nrow(revenueDf |> filter(IS_CONSOLIDATED == 1)) > 0 
+		     && nrow(revenueDf |> filter(IS_CONSOLIDATED == 0)) > 0){
+		    revenueTb <- revenueDf |> mutate(CONSOL=if_else(IS_CONSOLIDATED == 0, 'CONSOL', 'NON_CONSOL')) |>
+		      select(PERIOD_END, CONSOL, IS_AUDITED, ITEM_VAL) |>
+		      group_by(PERIOD_END, CONSOL) |>
+		      summarise(VAL = mean(ITEM_VAL)/10000) |>
+		      pivot_wider(id_cols = PERIOD_END, names_from = CONSOL, values_from = VAL) |>
+		      ungroup() |>
+		      mutate(CONSOL_GROWTH = 100*(CONSOL/lag(CONSOL) - 1),
+		             NON_CONSOL_GROWTH = 100*(NON_CONSOL/lag(NON_CONSOL) - 1))
+		    
+		    p1 <- revenueTb |> select(PERIOD_END, CONSOL, NON_CONSOL) |>
+		      pivot_longer(-PERIOD_END) |>
+		      ggplot(aes(x=PERIOD_END, y=value, fill = factor(name))) +
+		      theme_economist() +
+		      theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+		      scale_fill_viridis_d() +
+		      geom_bar(stat='identity', position = 'dodge2') +
+		      scale_x_date(date_breaks = '3 months', date_labels = '%Y-%b') +
+		      labs(x = '', y = 'EBIT (Rs. crore)', color='', fill='')
+		    
+		    p2 <- revenueTb |> select(PERIOD_END, CONSOL_GROWTH, NON_CONSOL_GROWTH) |>
+		      rename(CONSOL = CONSOL_GROWTH, NON_CONSOL = NON_CONSOL_GROWTH) |>
+		      pivot_longer(-PERIOD_END) |>
+		      ggplot(aes(x=PERIOD_END, y=value, fill = factor(name))) +
+		      theme_economist() +
+		      theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+		      scale_fill_viridis_d() +
+		      geom_bar(stat='identity', position = 'dodge2') +
+		      guides(fill='none') +
+		      scale_x_date(date_breaks = '3 months', date_labels = '%Y-%b') +
+		      labs(x = '', y = 'QoQ Change (%)', color='', fill='')
+		    
+		  } else {
+		    barColor <- viridis_pal()(2)[1]
+		    revenueTb <- revenueDf |> 
+		      select(PERIOD_END, IS_AUDITED, ITEM_VAL) |>
+		      group_by(PERIOD_END) |>
+		      summarise(VAL = mean(ITEM_VAL)/10000) |>
+		      mutate(GROWTH = 100*(VAL/lag(VAL) - 1))
+		    
+		    p1 <- revenueTb |> 
+		      ggplot(aes(x=PERIOD_END, y=VAL)) +
+		      theme_economist() +
+		      theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+		      scale_fill_viridis_d() +
+		      geom_bar(stat='identity', position = 'dodge2', fill = barColor) +
+		      scale_x_date(date_breaks = '3 months', date_labels = '%Y-%b') +
+		      labs(x = '', y = 'EBIT (Rs. crore)', color='', fill='')
+		    
+		    p2 <- revenueTb |> 
+		      ggplot(aes(x=PERIOD_END, y=GROWTH)) +
+		      theme_economist() +
+		      theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+		      scale_fill_viridis_d() +
+		      geom_bar(stat='identity', position = 'dodge2', fill = barColor) +
+		      guides(fill='none') +
+		      scale_x_date(date_breaks = '3 months', date_labels = '%Y-%b') +
+		      labs(x = '', y = 'QoQ Change (%)', color='', fill='')
+		  }
+		  
+		  p1 / p2 + plot_layout(axes = "collect_x") + 
+		    plot_annotation(title = sprintf("%s Quarterly EBIT", ticker), 
+		                    subtitle = sprintf("%s:%s", min(revenueTb$PERIOD_END), max(revenueTb$PERIOD_END)),
+		                    theme = theme_economist(),
+		                    caption = '@StockViz')
+		  
+		  ggsave(sprintf("%s/%s.ebit.png", plotPath, fName), width=12, height=12)
+		}, error=function(e){print(e)})
+		
+		################
+		
+		tryCatch({
+		  revenueDf <- sqlQuery(lcon, sprintf("select * from FUNDA_XBRL 
+                                    where symbol = '%s' 
+                                    and period_type='quarterly'
+                                    and ITEM_KEY = 'RevenueFromOperations'",
+		                                  ticker))
+		  
+		  p1 <- NULL
+		  p2 <- NULL
+		  
+		  if(nrow(revenueDf |> filter(IS_CONSOLIDATED == 1)) > 0 
+		     && nrow(revenueDf |> filter(IS_CONSOLIDATED == 0)) > 0){
+  		  revenueTb <- revenueDf |> mutate(CONSOL=if_else(IS_CONSOLIDATED == 0, 'CONSOL', 'NON_CONSOL')) |>
+  		    select(PERIOD_END, CONSOL, IS_AUDITED, ITEM_VAL) |>
+  		    group_by(PERIOD_END, CONSOL) |>
+  		    summarise(VAL = mean(ITEM_VAL)/10000) |>
+  		    pivot_wider(id_cols = PERIOD_END, names_from = CONSOL, values_from = VAL) |>
+  		    ungroup() |>
+  		    mutate(CONSOL_GROWTH = 100*(CONSOL/lag(CONSOL) - 1),
+  		           NON_CONSOL_GROWTH = 100*(NON_CONSOL/lag(NON_CONSOL) - 1))
+  
+  	    p1 <- revenueTb |> select(PERIOD_END, CONSOL, NON_CONSOL) |>
+  	      pivot_longer(-PERIOD_END) |>
+  	      ggplot(aes(x=PERIOD_END, y=value, fill = factor(name))) +
+  	      theme_economist() +
+  	      theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  	      scale_fill_viridis_d() +
+  	      geom_bar(stat='identity', position = 'dodge2') +
+  	      scale_x_date(date_breaks = '3 months', date_labels = '%Y-%b') +
+  	      labs(x = '', y = 'Revenue (Rs. crore)', color='', fill='')
+  		  
+  	    p2 <- revenueTb |> select(PERIOD_END, CONSOL_GROWTH, NON_CONSOL_GROWTH) |>
+  	      rename(CONSOL = CONSOL_GROWTH, NON_CONSOL = NON_CONSOL_GROWTH) |>
+  	      pivot_longer(-PERIOD_END) |>
+  	      ggplot(aes(x=PERIOD_END, y=value, fill = factor(name))) +
+  	      theme_economist() +
+  	      theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  	      scale_fill_viridis_d() +
+  	      geom_bar(stat='identity', position = 'dodge2') +
+  	      guides(fill='none') +
+  	      scale_x_date(date_breaks = '3 months', date_labels = '%Y-%b') +
+  	      labs(x = '', y = 'QoQ Change (%)', color='', fill='')
+
+		  } else {
+		    barColor <- viridis_pal()(2)[1]
+		    revenueTb <- revenueDf |> 
+		      select(PERIOD_END, IS_AUDITED, ITEM_VAL) |>
+		      group_by(PERIOD_END) |>
+		      summarise(VAL = mean(ITEM_VAL)/10000) |>
+		      mutate(GROWTH = 100*(VAL/lag(VAL) - 1))
+		    
+		    p1 <- revenueTb |> 
+		      ggplot(aes(x=PERIOD_END, y=VAL)) +
+		      theme_economist() +
+		      theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+		      scale_fill_viridis_d() +
+		      geom_bar(stat='identity', position = 'dodge2', fill = barColor) +
+		      scale_x_date(date_breaks = '3 months', date_labels = '%Y-%b') +
+		      labs(x = '', y = 'Revenue (Rs. crore)', color='', fill='')
+		    
+		    p2 <- revenueTb |> 
+		      ggplot(aes(x=PERIOD_END, y=GROWTH)) +
+		      theme_economist() +
+		      theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+		      scale_fill_viridis_d() +
+		      geom_bar(stat='identity', position = 'dodge2', fill = barColor) +
+		      guides(fill='none') +
+		      scale_x_date(date_breaks = '3 months', date_labels = '%Y-%b') +
+		      labs(x = '', y = 'QoQ Change (%)', color='', fill='')
+		  }
+		  
+		  p1 / p2 + plot_layout(axes = "collect_x") + 
+		    plot_annotation(title = sprintf("%s Quarterly Revenue From Operations", ticker), 
+		                    subtitle = sprintf("%s:%s", min(revenueTb$PERIOD_END), max(revenueTb$PERIOD_END)),
+		                    theme = theme_economist(),
+		                    caption = '@StockViz')
+	    
+		  ggsave(sprintf("%s/%s.RevenueFromOperations.png", plotPath, fName), width=12, height=12)
+		}, error=function(e){print(e)})
+		
+		################
+		
+		tryCatch({
 		  epsDf <- sqlQuery(lcon, sprintf("select * from FUNDA_XBRL 
                                     where symbol = '%s' 
                                     and period_type='quarterly'
@@ -220,6 +383,25 @@ createPlots <- function(isDelta = F){
 		  
 		  p1 <- NULL
 		  p2 <- NULL
+		  
+		  startPeriod <- min(epsDf$PERIOD_END)
+		  endPeriod <- max(epsDf$PERIOD_END) #endPeriod <- as.Date("2025-09-30")
+		  corpActs <- sqlQuery(lcon, sprintf("select EX_DATE, PURPOSE from CORP_ACTION
+		                                     where SYMBOL = '%s'
+		                                     and EX_DATE >= '%s'
+		                                     and EX_DATE <= '%s'
+		                                     and (
+		                                      PURPOSE like '%%merg%%'
+		                                      or PURPOSE like '%%bonus%%'
+		                                      or PURPOSE like '%%split%%'
+		                                      or PURPOSE like '%%splt%%'
+		                                      or PURPOSE like '%%amal%%'
+		                                     )",
+		                                     ticker, startPeriod, endPeriod))
+		  
+		  corpActs <- corpActs |> group_by(EX_DATE) |> 
+		    summarise(REASON = str_c(PURPOSE, collapse = ' & ')) |>
+		    ungroup()
 		  
 		  if(nrow(epsDf |> filter(IS_CONSOLIDATED == 1)) > 0){
   		  p1 <- epsDf |> filter(IS_CONSOLIDATED == 1) |>
@@ -232,6 +414,8 @@ createPlots <- function(isDelta = F){
   		    scale_color_viridis_d() +
   		    geom_line() +
   		    scale_x_date(date_breaks = '3 months', date_labels = '%Y-%b') +
+  		    geom_textvline(data = corpActs, mapping = aes(xintercept = EX_DATE, label = REASON), 
+  		                   linetype = "dashed", size=3) +
   		    labs(x = '', y = 'EPS (Rs.)', color='', title = 'Consolidated')
 		  }
 		  
@@ -246,6 +430,8 @@ createPlots <- function(isDelta = F){
   		        scale_color_viridis_d() +
   		        geom_line() +
   		        scale_x_date(date_breaks = '3 months', date_labels = '%Y-%b') +
+              geom_textvline(data = corpActs, mapping = aes(xintercept = EX_DATE, label = REASON), 
+                         linetype = "dashed", size=3) +
   		        labs(x = '', y = 'EPS (Rs.)', color='', title = 'Non-Consolidated')
 		  }
 		  
