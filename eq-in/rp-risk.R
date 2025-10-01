@@ -488,7 +488,7 @@ renderTickers <- function(){
 
 if(is.na(commandFlag) || is.null(commandFlag)){
 	#print("creating plots...")
-	createPlots()
+	#createPlots()
 	print("rendering etfs...")
 	renderTickers()
 
