@@ -31,7 +31,10 @@ commandFlag <- args[1]
 options("scipen"=100)
 options(stringsAsFactors = FALSE)
 
+print("opening norway...")
 lcon <- odbcDriverConnect(sprintf("Driver={ODBC Driver 17 for SQL Server};Server=%s;Database=%s;Uid=%s;Pwd=%s;", ldbserver, ldbname, ldbuser, ldbpassword), case = "nochange", believeNRows = TRUE)
+
+print("opening sweden...")
 pgCon <- dbConnect(RPostgres::Postgres(), host = 'sweden', user = ldbuser2, password = ldbpassword2, dbname = 'StockVizDyn', sslmode = 'allow')
 
 benchmarks <- c('NIFTY 50 TR',
@@ -487,8 +490,8 @@ renderTickers <- function(){
 #q()
 
 if(is.na(commandFlag) || is.null(commandFlag)){
-	#print("creating plots...")
-	#createPlots()
+	print("creating plots...")
+	createPlots()
 	print("rendering etfs...")
 	renderTickers()
 
