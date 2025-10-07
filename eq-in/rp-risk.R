@@ -378,6 +378,82 @@ createPlots <- function(isDelta = F){
 		################
 		
 		tryCatch({
+		  indianFunds <- sqlQuery(lcon, sprintf("select as_of, sum(v) from SHARE_HOLDING_PATTERN_XBRL
+		                                        where (k1 = 'VentureCapitalFunds' or k1 = 'AlternativeInvestmentFunds' or k1 = 'MutualFundsOrUti')
+		                                        and symbol ='%s'
+		                                        and k2='PercentageOfTotalVotingRights' 
+		                                        group by as_of", ticker))
+		  
+		  indianIndividuals <- sqlQuery(lcon, sprintf("select as_of, sum(v) from SHARE_HOLDING_PATTERN_XBRL
+		                                        where k1 like '%%IndividualShareholders%%'
+		                                        and symbol ='%s'
+		                                        and k2='PercentageOfTotalVotingRights' 
+		                                        group by as_of", ticker))
+		  
+		  foreignFunds <- sqlQuery(lcon, sprintf("select as_of, sum(v) from SHARE_HOLDING_PATTERN_XBRL
+		                                        where (k1 = 'ForeignVentureCapitalFunds' or k1 = 'ForeignPortfolioInvestor')
+		                                        and symbol ='%s'
+		                                        and k2='PercentageOfTotalVotingRights' 
+		                                        group by as_of", ticker))
+		  
+		  promoter <- sqlQuery(lcon, sprintf("select as_of, sum(v) from SHARE_HOLDING_PATTERN_XBRL
+		                                        where k1 = 'ShareholdingOfPromoterAndPromoterGroup'
+		                                        and symbol ='%s'
+		                                        and k2='PercentageOfTotalVotingRights' 
+		                                        group by as_of", ticker))
+		  
+		  indianGovt <- sqlQuery(lcon, sprintf("select as_of, sum(v) from SHARE_HOLDING_PATTERN_XBRL
+		                                        where (k1 = 'CentralGovernmentOrPresidentOfIndia' or k1 = 'StateGovernmentsOrGovernors' or k1 = 'CentralGovernmentOrStateGovernmentS')
+		                                        and symbol ='%s'
+		                                        and k2='PercentageOfTotalVotingRights' 
+		                                        group by as_of", ticker))
+		  
+		  allPct <- indianFunds |> full_join(indianIndividuals, join_by(as_of)) |> 
+		    full_join(foreignFunds, join_by(as_of)) |> 
+		    full_join(promoter, join_by(as_of)) |> 
+		    full_join(indianGovt, join_by(as_of))
+		    
+		    
+		  names(allPct) <- c('AsOf', 'IndianFunds', 'IndianIndividuals', 'ForeignFunds', 'Promoter', 'IndianGovt')
+		  
+		  tpPct <- allPct |> mutate(across(-AsOf, as.numeric)) |>
+		    select_if(~ is.Date(.x) || sum(.x) > 0)
+		  
+		  if(nrow(tpPct) > 5){
+  		  p1 <- tpPct |> pivot_longer(-AsOf) |>
+  		    ggplot(aes(x = AsOf, y=value, color = name)) +
+  		    theme_economist() +
+  		    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  		    scale_color_viridis_d() +
+  		    geom_line() +
+  		    scale_y_log10() +
+  		    scale_x_date(date_breaks = '6 months', date_labels = '%Y-%b') +
+  		    labs(x = '', y = 'Ownership (log %)', color='', fill='',
+  		         title = sprintf('%s Ownership', ticker),
+  		         subtitle = sprintf("%s:%s", min(tpPct$AsOf), max(tpPct$AsOf)),
+  		         caption = '@StockViz')
+		  } else {
+  		  p1 <- tpPct |> pivot_longer(-AsOf) |>
+          ggplot(aes(x = factor(AsOf), y=value, fill = name)) +
+    		    theme_economist() +
+    		    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    		    scale_fill_viridis_d() +
+    		    geom_bar(stat='identity', position = position_dodge()) +
+  		      geom_text(aes(label = paste0(value, '%')), position = position_dodge(width = 0.9), vjust=-0.5) +
+  		      scale_y_log10() +
+    		    #scale_x_date(date_breaks = '1 months', date_labels = '%Y-%b') +
+    		    labs(x = '', y = 'Ownership (log %)', color='', fill='',
+    		         title = sprintf('%s Ownership', ticker),
+    		         subtitle = sprintf("%s:%s", min(tpPct$AsOf), max(tpPct$AsOf)),
+    		         caption = '@StockViz')
+		  }
+		  
+		  ggsave(sprintf("%s/%s.ownership.png", plotPath, fName), plot=p1, width=12, height=12)
+		}, error=function(e){print(e)})
+		
+		################
+		
+		tryCatch({
 		  epsDf <- sqlQuery(lcon, sprintf("select * from FUNDA_XBRL 
                                     where symbol = '%s' 
                                     and period_type='quarterly'
