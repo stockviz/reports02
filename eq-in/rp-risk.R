@@ -420,12 +420,17 @@ createPlots <- function(isDelta = F){
 		    select_if(~ is.Date(.x) || sum(.x) > 0)
 		  
 		  if(nrow(tpPct) > 5){
+		    labelData <- tpPct |> filter(AsOf == max(AsOf)) |>
+		      pivot_longer(-AsOf) |>
+		      mutate(label = paste0(value, '%'))
+		    
   		  p1 <- tpPct |> pivot_longer(-AsOf) |>
   		    ggplot(aes(x = AsOf, y=value, color = name)) +
   		    theme_economist() +
   		    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   		    scale_color_viridis_d() +
   		    geom_line() +
+  		    geom_text_repel(data = labelData, aes(label = label), color='black') +
   		    scale_y_log10() +
   		    scale_x_date(date_breaks = '6 months', date_labels = '%Y-%b') +
   		    labs(x = '', y = 'Ownership (log %)', color='', fill='',
