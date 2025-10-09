@@ -378,6 +378,71 @@ createPlots <- function(isDelta = F){
 		################
 		
 		tryCatch({
+		  marginAmt <- sqlQuery(lcon, sprintf("select TIME_STAMP, TOT_FINANCED_LAKHS from MTF_REPORT where symbol = '%s'", ticker))
+		  if (nrow(marginAmt) == 0) stop("no rows in MTF_REPORT")
+		  
+		  ffMktCap <- sqlQuery(lcon, sprintf("select TIME_STAMP, FF_MKT_CAP_CR from equity_misc_info where symbol = '%s'", ticker))
+		  if (nrow(ffMktCap) == 0) stop("no rows in equity_misc_info")
+		  
+		  marginXts <- xts(marginAmt[,2], marginAmt[,1])
+		  ffMktCapXts <- xts(ffMktCap[,2], ffMktCap[,1])
+		  
+		  allXts <- merge(marginXts, ffMktCapXts)
+		  names(allXts) <- c('AMT', 'FF')
+		  allXts$FF <- na.locf(allXts$FF)
+		  allXts$FF <- na.locf(allXts$FF, fromLast = TRUE)
+		  allXts <- na.omit(allXts)
+		  
+		  mtfPct <- data.frame(allXts) |> 
+		    mutate(TIME_STAMP = index(allXts), 
+		           FF = if_else(TIME_STAMP >= '2024-03-01', FF * 100, FF), 
+		           FF_PCT = 100*AMT/(100*FF))
+		  
+		  labelData <- mtfPct |> filter(TIME_STAMP == max(TIME_STAMP)) |>
+		    mutate(label1 = format(AMT, big.mark = ','), label2 = paste0(round(FF_PCT, 2), '%'))
+		  
+		  lineColor <- viridis_pal()(2)[1]
+		  
+		  monthsData <- as.numeric(max(mtfPct$TIME_STAMP) - min(mtfPct$TIME_STAMP))/30
+		  labelInterval <- 1
+		  if (monthsData > 24 && monthsData < 48) {
+		    labelInterval <- 3  
+		  } else if (monthsData > 48) {
+		    labelInterval <- 6  
+		  }
+		  
+      p1 <- ggplot(mtfPct, aes(x=TIME_STAMP, y = AMT)) +
+        theme_economist() +
+        theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+        geom_line(color = lineColor) +
+        geom_text_repel(data = labelData, aes(label = label1), color='black') +
+        scale_y_log10() +
+        scale_x_date(date_breaks = sprintf('%d months', labelInterval), date_labels = '%Y-%b') +
+        labs(x = '', y = 'Total Financed (log Rs. Lakhs)', color='', fill='',
+             title = 'Amount (Lakhs)')
+      
+      p2 <- ggplot(mtfPct, aes(x=TIME_STAMP, y = FF_PCT)) +
+        theme_economist() +
+        theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+        geom_line(color = lineColor) +
+        geom_text_repel(data = labelData, aes(label = label2), color='black') +
+        scale_x_date(date_breaks = sprintf('%d months', labelInterval), date_labels = '%Y-%b') +
+        labs(x = '', y = 'Total Financed of Freefloat(%)', color='', fill='',
+             title = 'Freefloat')
+      
+      p1 / p2 + plot_layout(axes = "collect_x") + 
+        plot_annotation(title = sprintf("%s Total Financed under MTF", ticker), 
+                        subtitle = sprintf("%s:%s", min(mtfPct$TIME_STAMP), max(mtfPct$TIME_STAMP)),
+                        theme = theme_economist(),
+                        caption = '@StockViz')
+      
+      ggsave(sprintf("%s/%s.mtf.png", plotPath, fName), width=12, height=12)
+      
+		}, error=function(e){print(e)})
+		
+		################
+		
+		tryCatch({
 		  indianFunds <- sqlQuery(lcon, sprintf("select as_of, sum(v) from SHARE_HOLDING_PATTERN_XBRL
 		                                        where (k1 = 'VentureCapitalFunds' or k1 = 'AlternativeInvestmentFunds' or k1 = 'MutualFundsOrUti')
 		                                        and symbol ='%s'
@@ -576,13 +641,12 @@ if(is.na(commandFlag) || is.null(commandFlag)){
 	print("rendering etfs...")
 	renderTickers()
 
-	#print("rendering master page...")
-	#render("rp-risk.Rmd", output_file="rp-risk.html")
+	render("rp-margin.Rmd", output_file="rp-margin.html")
 	q()
 }
 
 if(commandFlag == "MASTER_ONLY"){
-	#render("rp-risk.Rmd", output_file="rp-risk.html")
+	render("rp-margin.Rmd", output_file="rp-margin.html")
 	q()
 }
 
@@ -598,7 +662,6 @@ if(commandFlag == "DELTA"){
 	print("rendering etfs...")
 	renderTickers()
 
-	#print("rendering master page...")
-	#render("rp-risk.Rmd", output_file="rp-risk.html")
+	render("rp-margin.Rmd", output_file="rp-margin.html")
 	q()
 }
