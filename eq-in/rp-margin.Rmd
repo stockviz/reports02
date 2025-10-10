@@ -25,7 +25,7 @@ library('ggthemes')
 
 library('DT')
 
-#source("C:/stockviz/r/config.r")
+#source("/mnt/hollandC/StockViz/R/config.r")
 source("/mnt/hollandr/config.r")
 
 options("scipen"=100)
@@ -48,9 +48,18 @@ mtfAmt <- sqlQuery(lcon, sprintf("select SYMBOL, TOT_FINANCED_LAKHS from mtf_rep
 ffDate <- sqlQuery(lcon, sprintf("select max(time_stamp) from EQUITY_MISC_INFO where time_stamp <= '%s'", mtfDate))[[1]]
 ffDf <- sqlQuery(lcon, sprintf("select SYMBOL, FF_MKT_CAP_CR from EQUITY_MISC_INFO where time_stamp = '%s'", ffDate))
 
-mtfStats <- mtfAmt |> inner_join(ffDf, join_by(SYMBOL)) |> 
-  mutate(FF_PCT = 100*TOT_FINANCED_LAKHS/(10000*FF_MKT_CAP_CR)) |>
-  select(-FF_MKT_CAP_CR) |> arrange(desc(FF_PCT)) |>
+bhavDts <- sqlQuery(lcon, "select top 10 time_stamp from px_history group by time_stamp order by time_stamp desc")
+startBhavDt <- min(bhavDts[,1])
+avgTrdVal <- sqlQuery(lcon, sprintf("select SYMBOL, avg(TOT_TRD_VAL) AVG_TRD_VAL from px_history 
+                                 where series in ('EQ', 'BE') 
+                                 and time_stamp >= '%s' 
+                                 group by symbol", startBhavDt))
+
+mtfStats <- mtfAmt |> 
+  inner_join(ffDf, join_by(SYMBOL)) |> 
+  inner_join(avgTrdVal, join_by(SYMBOL)) |> 
+  mutate(FF_PCT = 100*TOT_FINANCED_LAKHS/(10000*FF_MKT_CAP_CR), TRD_PCT = 100*TOT_FINANCED_LAKHS/(AVG_TRD_VAL/100000)) |>
+  select(-c(FF_MKT_CAP_CR, AVG_TRD_VAL)) |> arrange(desc(FF_PCT)) |>
   mutate(more = ifelse(file.exists(sprintf("risk/in.%s.html", gsub("[^[:alnum:] ]| ", "", SYMBOL))), 
 							sprintf('<a href="/reports02/eq-in/risk/in.%s.html" target="_blank">>>></a>', gsub("[^[:alnum:] ]| ", "", SYMBOL)), 
 							""))
