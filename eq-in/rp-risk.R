@@ -632,8 +632,8 @@ renderTickers <- function(){
 	}
 }
 
-#renderTickers()
-#q()
+renderTickers()
+q()
 
 if(is.na(commandFlag) || is.null(commandFlag)){
 	print("creating plots...")
