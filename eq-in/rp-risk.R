@@ -545,6 +545,7 @@ createPlots <- function(isDelta = F){
 		                                      or PURPOSE like '%%split%%'
 		                                      or PURPOSE like '%%splt%%'
 		                                      or PURPOSE like '%%amal%%'
+		                                      or PURPOSE like '%%right%%'
 		                                     )",
 		                                     ticker, startPeriod, endPeriod))
 		  
