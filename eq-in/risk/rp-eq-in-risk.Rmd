@@ -21,6 +21,8 @@ createdDate <- gsub(" 0", " ",format(Sys.Date(), "%B %d, %Y"))
 idPath <- "../../"
 
 library('RODBC')
+library('DBI')
+library('RSQLite')
 library('tidyverse')
 library('lubridate')
 library('DT')
@@ -34,8 +36,10 @@ ticker <- params$ticker
 fName <- params$fName
 
 #source("/mnt/hollandC/StockViz/R/config.r")
-source("/mnt/hollandr/config.r")
+#equitySummDb <- "/mnt/data/recoll/EQUITY.db"
 
+source("/mnt/hollandr/config.r")
+equitySummDb <- "/srv/stockviz-dashboard/EQUITY.db"
 
 bucketUrl <- "https://etf-us-risk-plots.stockviz.biz/"
 
@@ -90,6 +94,14 @@ if(file.exists(sprintf("plots/%s.mtf.png", fName))){
   mtfFileName <- paste0(bucketUrl, fName, ".mtf.png")
 }
 
+aiSummaries <- NULL
+mydb <- dbConnect(RSQLite::SQLite(), dbname = equitySummDb, flags = RSQLite::SQLITE_RO)
+aiAsOf <- dbGetQuery(mydb, "select max(as_of) from EQUITY_SUMMARY where SYMBOL = $1", params=list(ticker))
+if(nrow(aiAsOf) > 0 && !is.na(aiAsOf[[1]])){
+  aiSummaries <- dbGetQuery(mydb, "SELECT * FROM EQUITY_SUMMARY WHERE SYMBOL = $1 and AS_OF = $2", params=list(ticker, aiAsOf[[1]]))
+}
+dbDisconnect(mydb)
+
 ```
 
 ---
@@ -97,16 +109,16 @@ title: `r ticker`
 date: `r createdDate`
 ---
 
-## `r tickerName`
+# `r tickerName`
 `r indusLinkTxt`
 
-### Annual Returns
+## Annual Returns
 
 ![](`r fanPlotName`)
 
 ![](`r annPlotName`)
 
-### Cumulative Returns and Drawdowns
+## Cumulative Returns and Drawdowns
 
 ![](`r cumPlotName`)
 
@@ -120,7 +132,7 @@ if(!is.null(smaCumPlotName)){
 cat("<br><br>")
 ```
 
-### Fundamentals
+## Fundamentals
 
 \
 
@@ -148,7 +160,7 @@ if(!is.null(ebitFileName)){
 cat("<br><br>")
 ```
 
-### Ownership
+## Ownership
 
 \
 
@@ -163,7 +175,7 @@ cat("<br><br>")
 ```
 
 
-### Margined
+## Margined
 
 \
 
@@ -177,4 +189,19 @@ if(!is.null(mtfFileName)){
 cat("<br><br>")
 ```
 
+\
 
+```{r, ai_summary_chunk, echo = FALSE, results='asis', message = FALSE, warning = FALSE, fig.height=12, fig.width=12}
+
+if(!is.null(aiSummaries) && nrow(aiSummaries) > 0 && !is.na(aiSummaries$SUMMARY[1]) && !is.null(aiSummaries$SUMMARY[1])){
+  cat("## AI Summary", "\n\n")
+  cat("*asof: ", aiAsOf[[1]], " *", "\n\n")
+  summ <- paste0(unlist(aiSummaries$SUMMARY[1]), collapse = "")
+  summ <- str_replace_all(summ, "# ", "### ")
+  summ <- str_replace_all(summ, "## ", "#### ")
+  summ <- str_replace_all(summ, "### ", "##### ")
+  summ <- str_replace_all(summ, "#### ", "###### ")
+  cat(summ, "\n\n")
+}
+
+```
