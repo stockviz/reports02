@@ -1,0 +1,208 @@
+---
+params:
+  ticker: ""
+  fName: ""
+subtitle: Equity Metrics
+editor_options:
+  chunk_output_type: console
+output: 
+  html_document:
+    theme: flatly
+    highlight: tango
+    self_contained: false
+    lib_dir: rmdlib
+    includes:
+        in_header: ../header.html
+        after_body: ../../footer.html
+---
+
+```{r, init_chunk, echo = FALSE, message = FALSE, warning = FALSE}
+createdDate <- gsub(" 0", " ",format(Sys.Date(), "%B %d, %Y"))
+idPath <- "../../"
+
+library('RODBC')
+library('DBI')
+library('RSQLite')
+library('tidyverse')
+library('lubridate')
+library('DT')
+
+library('scales')
+
+options(stringsAsFactors = FALSE)
+options("scipen"=100)
+
+ticker <- params$ticker
+fName <- params$fName
+
+#source("/mnt/hollandC/StockViz/R/config.r")
+#equitySummDb <- "/mnt/data/recoll/EQUITY.db"
+
+source("/mnt/hollandr/config.r")
+equitySummDb <- "/srv/stockviz-dashboard/EQUITY.db"
+
+bucketUrl <- "https://etf-us-risk-plots.stockviz.biz/"
+
+lcon <- odbcDriverConnect(sprintf("Driver={ODBC Driver 17 for SQL Server};Server=%s;Database=%s;Uid=%s;Pwd=%s;", ldbserver, ldbname, ldbuser, ldbpassword), case = "nochange", believeNRows = TRUE)
+
+tickerName <- sqlQuery(lcon, sprintf("select top 1 NAME from EQUITY_TICKER where symbol='%s'", ticker))[[1]]
+industryDf <- sqlQuery(lcon, sprintf("select basic_industry 
+                                   from nse_industry a 
+                                   where a.symbol = '%s' 
+                                   and a.time_stamp = (select max(b.time_stamp) 
+                                         from nse_industry b 
+                                         where b.symbol = a.symbol)", ticker))
+
+if(nrow(industryDf) > 0){
+  industry <- industryDf[[1]]
+  indusLink <- paste0('/reports01/index/industry/rp-', gsub("[^[:alnum:] ]| ", "", industry), '.html')
+  indusLinkTxt <- sprintf("[%s](%s)", industry, indusLink)
+} else {
+  indusLinkTxt <- ""
+}
+fanPlotName <- paste0(bucketUrl, fName, ".fan.png")
+cumPlotName <- paste0(bucketUrl, fName, ".cumret.png")
+annPlotName <- paste0(bucketUrl, fName, ".annret.png")
+
+smaCumPlotName <- NULL
+if(file.exists(sprintf("plots/%s.sma.cumret.png", fName))){
+  smaCumPlotName <- paste0(bucketUrl, fName, ".sma.cumret.png")
+}
+
+epsFileName <- NULL
+if(file.exists(sprintf("plots/%s.eps.png", fName))){
+  epsFileName <- paste0(bucketUrl, fName, ".eps.png")
+}
+
+revenueFileName <- NULL
+if(file.exists(sprintf("plots/%s.RevenueFromOperations.png", fName))){
+  revenueFileName <- paste0(bucketUrl, fName, ".RevenueFromOperations.png")
+}
+
+ebitFileName <- NULL
+if(file.exists(sprintf("plots/%s.ebit.png", fName))){
+  ebitFileName <- paste0(bucketUrl, fName, ".ebit.png")
+}
+
+ownershipFileName <- NULL
+if(file.exists(sprintf("plots/%s.ownership.png", fName))){
+  ownershipFileName <- paste0(bucketUrl, fName, ".ownership.png")
+}
+
+mtfFileName <- NULL
+if(file.exists(sprintf("plots/%s.mtf.png", fName))){
+  mtfFileName <- paste0(bucketUrl, fName, ".mtf.png")
+}
+
+aiSummaries <- NULL
+mydb <- dbConnect(RSQLite::SQLite(), dbname = equitySummDb, flags = RSQLite::SQLITE_RO)
+aiAsOf <- dbGetQuery(mydb, "select max(as_of) from EQUITY_SUMMARY where SYMBOL = $1", params=list(ticker))
+if(nrow(aiAsOf) > 0 && !is.na(aiAsOf[[1]])){
+  aiSummaries <- dbGetQuery(mydb, "SELECT * FROM EQUITY_SUMMARY WHERE SYMBOL = $1 and AS_OF = $2", params=list(ticker, aiAsOf[[1]]))
+}
+dbDisconnect(mydb)
+
+```
+
+---
+title: `r ticker`
+date: `r createdDate`
+---
+
+# `r tickerName`
+`r indusLinkTxt`
+
+## Annual Returns
+
+![](`r fanPlotName`)
+
+![](`r annPlotName`)
+
+## Cumulative Returns and Drawdowns
+
+![](`r cumPlotName`)
+
+```{r, plot_cumsma_chunk, results='asis', echo = FALSE, message = FALSE, warning = FALSE, fig.height=6, fig.width=12} 
+
+if(!is.null(smaCumPlotName)){
+	cat("\n\n")
+	cat("![](", smaCumPlotName, ")")
+	cat("\n\n")
+}
+cat("<br><br>")
+```
+
+## Fundamentals
+
+\
+
+```{r, plot_eps_chunk, results='asis', echo = FALSE, message = FALSE, warning = FALSE, fig.height=12, fig.width=12} 
+
+if(!is.null(epsFileName)){
+	cat("\n\n")
+	cat("![](", epsFileName, ")")
+	cat("\n\n")
+}
+cat("<br><br>")
+
+if(!is.null(revenueFileName)){
+	cat("\n\n")
+	cat("![](", revenueFileName, ")")
+	cat("\n\n")
+}
+cat("<br><br>")
+
+if(!is.null(ebitFileName)){
+	cat("\n\n")
+	cat("![](", ebitFileName, ")")
+	cat("\n\n")
+}
+cat("<br><br>")
+```
+
+## Ownership
+
+\
+
+```{r, plot_ownership_chunk, results='asis', echo = FALSE, message = FALSE, warning = FALSE, fig.height=12, fig.width=12} 
+
+if(!is.null(ownershipFileName)){
+	cat("\n\n")
+	cat("![](", ownershipFileName, ")")
+	cat("\n\n")
+}
+cat("<br><br>")
+```
+
+
+## Margined
+
+\
+
+```{r, plot_mtf_chunk, results='asis', echo = FALSE, message = FALSE, warning = FALSE, fig.height=12, fig.width=12} 
+
+if(!is.null(mtfFileName)){
+	cat("\n\n")
+	cat("![](", mtfFileName, ")")
+	cat("\n\n")
+}
+cat("<br><br>")
+```
+
+\
+
+```{r, ai_summary_chunk, echo = FALSE, results='asis', message = FALSE, warning = FALSE, fig.height=12, fig.width=12}
+
+if(!is.null(aiSummaries) && nrow(aiSummaries) > 0 && !is.na(aiSummaries$SUMMARY[1]) && !is.null(aiSummaries$SUMMARY[1])){
+  cat("## AI Summary", "\n\n")
+  cat("*asof: ", aiAsOf[[1]], " *", "\n\n")
+  summ <- paste0(unlist(aiSummaries$SUMMARY[1]), collapse = "")
+  summ <- str_replace_all(summ, "#### ", "###### ")
+  summ <- str_replace_all(summ, "### ", "##### ")
+  summ <- str_replace_all(summ, "## ", "#### ")
+  summ <- str_replace_all(summ, "# ", "### ")
+  
+  cat(summ, "\n\n")
+}
+
+```

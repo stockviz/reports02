@@ -1,0 +1,138 @@
+---
+params:
+  ticker: ""
+  fName: ""
+subtitle: ETF Risk Metrics
+editor_options:
+  chunk_output_type: console
+output: 
+  html_document:
+    theme: flatly
+    highlight: tango
+    self_contained: false
+    lib_dir: rmdlib
+    includes:
+        in_header: ../header.html
+        after_body: ../../footer.html
+---
+
+```{r, init_chunk, echo = FALSE, message = FALSE, warning = FALSE}
+createdDate <- gsub(" 0", " ",format(Sys.Date(), "%B %d, %Y"))
+idPath <- "../../"
+
+library('RODBC')
+library('tidyverse')
+library('lubridate')
+library('DT')
+
+library('scales')
+
+options(stringsAsFactors = FALSE)
+options("scipen"=100)
+
+ticker <- params$ticker
+fName <- params$fName
+
+#source("C:/stockviz/r/config.r")
+source("/mnt/hollandr/config.r")
+
+bucketUrl <- "https://etf-us-risk-plots.stockviz.biz/"
+
+lcon <- odbcDriverConnect(sprintf("Driver={ODBC Driver 17 for SQL Server};Server=%s;Database=%s;Uid=%s;Pwd=%s;", ldbserver, ldbname, ldbuser, ldbpassword), case = "nochange", believeNRows = TRUE)
+lconUs2 <- odbcDriverConnect(sprintf("Driver={ODBC Driver 17 for SQL Server};Server=%s;Database=%s;Uid=%s;Pwd=%s;", ldbserver, "StockVizUs2", ldbuser, ldbpassword), case = "nochange", believeNRows = TRUE)
+
+etfName <- sqlQuery(lcon, sprintf("select FUND from ETF_META where symbol='%s'", ticker))[[1]]
+
+benchmarks <- c("MKT_RF", "ALPHA", "SMB", "HML", "RMW", "CMA", "MOM", "RESIDUAL")
+ffdesc <- read.csv("../fama-french-factors.csv")
+
+fanPlotName <- paste0(bucketUrl, fName, ".fan.png")
+cumPlotName <- paste0(bucketUrl, fName, ".cumret.png")
+smaCumPlotNameLocal <- paste0("plots/", fName, ".sma.cumret.png")
+smaCumPlotNameRemote <- paste0(bucketUrl, fName, ".sma.cumret.png")
+annPlotName <- paste0(bucketUrl, fName, ".annret.png")
+radarPlotName <- paste0(bucketUrl, fName, ".radar.png")
+
+plotPath <- "../analysis/plots-fama-fench"
+
+```
+
+---
+title: `r ticker`
+date: `r createdDate`
+---
+
+## `r etfName`
+
+### Annual Returns
+
+![](`r fanPlotName`)
+
+![](`r annPlotName`)
+
+### Cumulative Returns and Drawdowns
+
+![](`r cumPlotName`)
+
+```{r, plot_cumsma_chunk, results='asis', echo = FALSE, message = FALSE, warning = FALSE, fig.height=6, fig.width=12} 
+
+if(file.exists(smaCumPlotNameLocal)){
+	cat("\n\n")
+	cat("![](", smaCumPlotNameRemote, ")")
+	cat("\n\n")
+}
+cat("<br>")
+```
+
+### Performance Metrics
+
+```{r, metrics_radar_chunk, echo = FALSE, results='asis', message = FALSE, warning = FALSE, fig.height=12, fig.width=12}
+metricMap <- read.csv(paste0(idPath, "/metric_map.csv"))
+
+spyMaxDt <- sqlQuery(lconUs2, "select max(time_stamp) from EQ_CAPM")[[1]]
+statsDf <- sqlQuery(lconUs2, sprintf("select SYMBOL, ID, VAL from EQ_CAPM where time_stamp = '%s'", spyMaxDt)) 
+etfMetaDf <- sqlQuery(lcon, "select SYMBOL, ASSET_CLASS from ETF_META")
+
+ac <- etfMetaDf[etfMetaDf$SYMBOL == ticker,]$ASSET_CLASS[1]
+
+dataDf <- statsDf %>% inner_join(etfMetaDf, by='SYMBOL') %>% filter(ASSET_CLASS == ac) %>% select(SYMBOL, ID, VAL)
+
+rankTibs <- dataDf %>% 
+	pivot_wider(names_from=ID, values_from=VAL) %>% 
+	mutate_at(vars(-SYMBOL), rank) 
+
+metricDf <- dataDf %>% filter(SYMBOL == ticker) %>%
+	inner_join(rankTibs %>% filter(SYMBOL == ticker) %>% pivot_longer(!SYMBOL, names_to='ID', values_to='VAL') %>% select(ID, VAL), by='ID') %>%
+	inner_join(metricMap, by='ID') %>%
+	mutate(METRIC = paste0(DESC, ' (', ID, ')'), VAL = round(VAL.x, 5)) %>%
+	rename(SCORE = VAL.y) %>%
+	select(METRIC, VAL, SCORE) %>%
+	as.data.frame()
+
+mfMetricsDT <- datatable(metricDf, rownames = F, class = 'cell-border stripe', filter='none', colnames = c("", names(metricDf)[-1]), options = list(dom = 't', pageLength = 30, ordering=F))
+htmltools::tagList(print(mfMetricsDT))
+
+```
+
+![](`r radarPlotName`)
+
+
+```{r, plot_create_chunk, results='asis', echo = FALSE, message = FALSE, warning = FALSE, fig.height=6, fig.width=12} 
+if(file.exists(sprintf("%s/fama-french-regress-etf.%s.%s.png", plotPath, ticker, benchmarks[1])) ){
+	cat("\n\n### Factor Exposures\n\n")
+	for(bm in benchmarks){
+		if(!file.exists(sprintf("%s/fama-french-regress-etf.%s.%s.png", plotPath, ticker, bm)) ){
+			next
+		}
+		
+		cat("\n\n")
+		cat("![](", sprintf("%s/fama-french-regress-etf.%s.%s.png", plotPath, ticker, bm), ")")
+		if(nrow(ffdesc[ffdesc$ABBR == bm,]) > 0){
+			cat("\n\n<i>", bm, ": ", ffdesc[ffdesc$ABBR == bm,]$DESC[1], "</i>\n\n")
+		}
+		cat("\n\n<br>")
+	}
+}
+cat("\n\n<br><br>")
+
+```

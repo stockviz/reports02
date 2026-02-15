@@ -1,0 +1,96 @@
+---
+title: Fama-French Factor Returns
+subtitle: StockViz
+editor_options:
+  chunk_output_type: console
+output: 
+  html_document:
+    theme: flatly
+    highlight: tango
+    self_contained: false
+    toc: true
+    lib_dir: risk/rmdlib	
+    includes:
+        in_header: header.html
+        after_body: ../footer.html		
+---
+
+```{r, init_chunk, echo = FALSE, message = FALSE, warning = FALSE}
+library('RODBC')
+library('tidyverse')
+
+plotPath <- "analysis/plots-fama-fench"
+
+#source("C:/stockviz/r/config.r")
+source("/mnt/hollandr/config.r")
+
+options("scipen"=100)
+options(stringsAsFactors = FALSE)
+
+createdDate <- gsub(" 0", " ",format(Sys.Date(), "%B %d, %Y"))
+
+lconUs2 <- odbcDriverConnect(sprintf("Driver={ODBC Driver 17 for SQL Server};Server=%s;Database=%s;Uid=%s;Pwd=%s;", ldbserver, "StockVizUs2", ldbuser, ldbpassword), case = "nochange", believeNRows = TRUE)
+ffdesc <- read.csv("fama-french-factors.csv")
+
+sorts <- list(teriles = c('HI_30', 'MED_40', 'LO_30'),
+			quintiles = c('HI_20', 'QNT_2', 'QNT_3', 'QNT_4', 'LO_20'),
+			deciles = c('HI_10', 'DEC_2', 'DEC_3', 'DEC_4', 'DEC_5', 'DEC_6', 'DEC_7', 'DEC_8', 'DEC_9', 'LO_10'))
+	
+```
+
+---
+date: `r createdDate`
+---
+## 5-Factors and momentum
+
+#### Annual Returns
+
+##### Since 1980
+
+![](`r paste0(plotPath, '/fama-french-factors.all.png')`)
+
+##### Since 2010
+
+![](`r paste0(plotPath, '/fama-french-factors.annret.png')`)
+
+#### Cumulative Returns
+
+##### Since 2010
+
+![](`r paste0(plotPath, '/fama-french-factors.cumret.png')`)
+
+
+```{r, plot_create_chunk, results='asis', echo = FALSE, message = FALSE, warning = FALSE, fig.height=6, fig.width=12}
+cat("<br><br>")
+
+for(i in 1:nrow(ffdesc)){
+	cat("\n\n### ", paste0(ffdesc$ABBR[i], ": ", ffdesc$EXP[i]), "\n\n")
+	cat("\n\n<i>",ffdesc$DESC[i],"</i>\n\n<br>")
+	cat("![](", sprintf('%s/factor.%s.fan.png', plotPath, ffdesc$ABBR[i]), ")")
+	cat("\n\n<br>")
+}
+
+```
+
+## Portfolios based on Size
+
+```{r, plot_create_chunk2, results='asis', echo = FALSE, message = FALSE, warning = FALSE, fig.height=6, fig.width=12}
+cat("<br>")
+
+for(srt in names(sorts)){
+	cat("\n\n### ", tools::toTitleCase(srt), "\n\n")
+	cat("![](", sprintf('%s/fama-french-size.%s.annret.png', plotPath, srt), ")")
+	cat("\n\n")
+	cat("![](", sprintf('%s/fama-french-size.%s.cumret.png', plotPath, srt), ")")
+	cat("\n\n")
+	fctr <- sorts[[srt]]
+	for(fName in c(first(fctr), last(fctr))){
+		cat("![](", sprintf('%s/factor-size.%s.%s.fan.png', plotPath, srt, fName), ")")
+		cat("\n\n")
+	}
+	cat("\n\n<br>")
+}
+```
+
+*Source: [Fama-French Data Library](https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html)*
+

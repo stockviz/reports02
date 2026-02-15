@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+<meta name="date" content="2026-02-08" />
+
+<title>Fama-French Industry Returns</title>
+
+<script src="risk/rmdlib/header-attrs-2.30/header-attrs.js"></script>
+<script src="risk/rmdlib/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="risk/rmdlib/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="risk/rmdlib/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="risk/rmdlib/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="risk/rmdlib/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="risk/rmdlib/navigation-1.1/tabsets.js"></script>
+<script src="risk/rmdlib/accessible-code-block-0.0.1/empty-anchor.js"></script>
+<link href="risk/rmdlib/font-awesome-6.4.0/css/all.min.css" rel="stylesheet" />
+<link href="risk/rmdlib/font-awesome-6.4.0/css/v4-shims.min.css" rel="stylesheet" />
+<meta name="description" content="US ETF analysis. Sharpe, VaR, CVar, etc..." />
+<meta property="og:image" content="https://avatars3.githubusercontent.com/u/21966469?s=400&v=4" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">StockViz</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-globe"></span>
+     
+    Macro
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/macro/rp-bnd.html">Fixed Income</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/macro/rp-cur.html">Currencies</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/macro/rp-cmdy.html">Commodities</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-arrows-v"></span>
+     
+    52w H&amp;L
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/52wk-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/52wk-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-rocket"></span>
+     
+    ATH
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/ath-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/ath-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-magnet"></span>
+     
+    Drawdowns
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/drawdowns-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/drawdowns-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-train"></span>
+     
+    Streaks
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/streaks-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/streaks-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-hand-pointer-o"></span>
+     
+    Indian Indices
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-risk.html">Performance Metrics</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-IN.html">Index Changes</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-MKT-CAP.html">Classification Changes</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-industry.html">Industry Metrics</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-syn.html">Synthetic Indices</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-vol-NIFTY.html">NIFTY Volatility</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-valuations.html">Valuations</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/results-IN.html">Result Dates</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/eq-in/rp-margin.html">Margin Report</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-shopping-bag"></span>
+     
+    Funds
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports03/mf/rp-IN.html">Indian Mutual Funds</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports03/pms/rp-IN.html">Indian PMS</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-risk.html">US ETFs</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-sector.html">US Sector ETFs</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-country.html">Country $ ETFs</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-percent"></span>
+     
+    Fama-French
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-fama-french-industry.html">Industry</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-fama-french-factors.html">Factors</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-fama-french-regression.html">Regressions</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://stockviz.biz">
+    <span class="fa fa-home"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="https://stockviz.substack.com">
+    <span class="fa fa-envelope-o"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Fama-French Industry Returns</h1>
+<h3 class="subtitle">StockViz</h3>
+<h4 class="date">February 8, 2026</h4>
+
+</div>
+
+<div id="TOC">
+<ul>
+<li><a href="#aero-aircraft">AERO: Aircraft</a></li>
+<li><a href="#agric-agriculture">AGRIC: Agriculture</a></li>
+<li><a href="#autos-automobiles-and-trucks">AUTOS: Automobiles and Trucks</a></li>
+<li><a href="#banks-banking">BANKS: Banking</a></li>
+<li><a href="#beer-beer-liquor">BEER: Beer &amp; Liquor</a></li>
+<li><a href="#bldmt-construction-materials">BLDMT: Construction Materials</a></li>
+<li><a href="#books-printing-and-publishing">BOOKS: Printing and Publishing</a></li>
+<li><a href="#boxes-shipping-containers">BOXES: Shipping Containers</a></li>
+<li><a href="#bussv-business-services">BUSSV: Business Services</a></li>
+<li><a href="#chems-chemicals">CHEMS: Chemicals</a></li>
+<li><a href="#chips-electronic-equipment">CHIPS: Electronic Equipment</a></li>
+<li><a href="#clths-apparel">CLTHS: Apparel</a></li>
+<li><a href="#cnstr-construction">CNSTR: Construction</a></li>
+<li><a href="#coal-coal">COAL: Coal</a></li>
+<li><a href="#drugs-pharmaceutical-products">DRUGS: Pharmaceutical Products</a></li>
+<li><a href="#elceq-electrical-equipment">ELCEQ: Electrical Equipment</a></li>
+<li><a href="#fabpr-fabricated-products">FABPR: Fabricated Products</a></li>
+<li><a href="#fin-trading">FIN: Trading</a></li>
+<li><a href="#food-food-products">FOOD: Food Products</a></li>
+<li><a href="#fun-entertainment">FUN: Entertainment</a></li>
+<li><a href="#gold-precious-metals">GOLD: Precious Metals</a></li>
+<li><a href="#guns-defense">GUNS: Defense</a></li>
+<li><a href="#hardw-computers">HARDW: Computers</a></li>
+<li><a href="#hlth-healthcare">HLTH: Healthcare</a></li>
+<li><a href="#hshld-consumer-goods">HSHLD: Consumer Goods</a></li>
+<li><a href="#insur-insurance">INSUR: Insurance</a></li>
+<li><a href="#labeq-measuring-and-control-equipment">LABEQ: Measuring and Control Equipment</a></li>
+<li><a href="#mach-machinery">MACH: Machinery</a></li>
+<li><a href="#meals-restaurants-hotels-motels">MEALS: Restaurants, Hotels, Motels</a></li>
+<li><a href="#medeq-medical-equipment">MEDEQ: Medical Equipment</a></li>
+<li><a href="#mines-non-metallic-and-industrial-metal-mining">MINES: Non-Metallic and Industrial Metal Mining</a></li>
+<li><a href="#oil-petroleum-and-natural-gas">OIL: Petroleum and Natural Gas</a></li>
+<li><a href="#other-almost-nothing">OTHER: Almost Nothing</a></li>
+<li><a href="#paper-business-supplies">PAPER: Business Supplies</a></li>
+<li><a href="#persv-personal-services">PERSV: Personal Services</a></li>
+<li><a href="#rlest-real-estate">RLEST: Real Estate</a></li>
+<li><a href="#rtail-retail">RTAIL: Retail</a></li>
+<li><a href="#rubbr-rubber-and-plastic-products">RUBBR: Rubber and Plastic Products</a></li>
+<li><a href="#ships-shipbuilding-railroad-equipment">SHIPS: Shipbuilding, Railroad Equipment</a></li>
+<li><a href="#smoke-tobacco-products">SMOKE: Tobacco Products</a></li>
+<li><a href="#soda-candy-soda">SODA: Candy &amp; Soda</a></li>
+<li><a href="#softw-computer-software">SOFTW: Computer Software</a></li>
+<li><a href="#steel-steel-works-etc">STEEL: Steel Works Etc</a></li>
+<li><a href="#telcm-communication">TELCM: Communication</a></li>
+<li><a href="#toys-recreation">TOYS: Recreation</a></li>
+<li><a href="#trans-transportation">TRANS: Transportation</a></li>
+<li><a href="#txtls-textiles">TXTLS: Textiles</a></li>
+<li><a href="#util-utilities">UTIL: Utilities</a></li>
+<li><a href="#whlsl-wholesale">WHLSL: Wholesale</a></li>
+</ul>
+</div>
+
+<p><img src="analysis/plots-fama-fench/fama-french-industry.all.png" /></p>
+<div id="aero-aircraft" class="section level3">
+<h3>AERO: Aircraft</h3>
+<div id="cumulative-returns" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/AERO.cumret.png" /></p>
+</div>
+<div id="annual-returns" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/AERO.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/AERO.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="agric-agriculture" class="section level3">
+<h3>AGRIC: Agriculture</h3>
+<div id="cumulative-returns-1" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/AGRIC.cumret.png" /></p>
+</div>
+<div id="annual-returns-1" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/AGRIC.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/AGRIC.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="autos-automobiles-and-trucks" class="section level3">
+<h3>AUTOS: Automobiles and Trucks</h3>
+<div id="cumulative-returns-2" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/AUTOS.cumret.png" /></p>
+</div>
+<div id="annual-returns-2" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/AUTOS.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/AUTOS.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="banks-banking" class="section level3">
+<h3>BANKS: Banking</h3>
+<div id="cumulative-returns-3" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/BANKS.cumret.png" /></p>
+</div>
+<div id="annual-returns-3" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/BANKS.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/BANKS.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="beer-beer-liquor" class="section level3">
+<h3>BEER: Beer &amp; Liquor</h3>
+<div id="cumulative-returns-4" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/BEER.cumret.png" /></p>
+</div>
+<div id="annual-returns-4" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/BEER.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/BEER.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="bldmt-construction-materials" class="section level3">
+<h3>BLDMT: Construction Materials</h3>
+<div id="cumulative-returns-5" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/BLDMT.cumret.png" /></p>
+</div>
+<div id="annual-returns-5" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/BLDMT.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/BLDMT.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="books-printing-and-publishing" class="section level3">
+<h3>BOOKS: Printing and Publishing</h3>
+<div id="cumulative-returns-6" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/BOOKS.cumret.png" /></p>
+</div>
+<div id="annual-returns-6" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/BOOKS.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/BOOKS.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="boxes-shipping-containers" class="section level3">
+<h3>BOXES: Shipping Containers</h3>
+<div id="cumulative-returns-7" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/BOXES.cumret.png" /></p>
+</div>
+<div id="annual-returns-7" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/BOXES.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/BOXES.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="bussv-business-services" class="section level3">
+<h3>BUSSV: Business Services</h3>
+<div id="cumulative-returns-8" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/BUSSV.cumret.png" /></p>
+</div>
+<div id="annual-returns-8" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/BUSSV.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/BUSSV.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="chems-chemicals" class="section level3">
+<h3>CHEMS: Chemicals</h3>
+<div id="cumulative-returns-9" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/CHEMS.cumret.png" /></p>
+</div>
+<div id="annual-returns-9" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/CHEMS.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/CHEMS.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="chips-electronic-equipment" class="section level3">
+<h3>CHIPS: Electronic Equipment</h3>
+<div id="cumulative-returns-10" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/CHIPS.cumret.png" /></p>
+</div>
+<div id="annual-returns-10" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/CHIPS.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/CHIPS.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="clths-apparel" class="section level3">
+<h3>CLTHS: Apparel</h3>
+<div id="cumulative-returns-11" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/CLTHS.cumret.png" /></p>
+</div>
+<div id="annual-returns-11" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/CLTHS.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/CLTHS.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="cnstr-construction" class="section level3">
+<h3>CNSTR: Construction</h3>
+<div id="cumulative-returns-12" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/CNSTR.cumret.png" /></p>
+</div>
+<div id="annual-returns-12" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/CNSTR.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/CNSTR.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="coal-coal" class="section level3">
+<h3>COAL: Coal</h3>
+<div id="cumulative-returns-13" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/COAL.cumret.png" /></p>
+</div>
+<div id="annual-returns-13" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/COAL.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/COAL.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="drugs-pharmaceutical-products" class="section level3">
+<h3>DRUGS: Pharmaceutical Products</h3>
+<div id="cumulative-returns-14" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/DRUGS.cumret.png" /></p>
+</div>
+<div id="annual-returns-14" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/DRUGS.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/DRUGS.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="elceq-electrical-equipment" class="section level3">
+<h3>ELCEQ: Electrical Equipment</h3>
+<div id="cumulative-returns-15" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/ELCEQ.cumret.png" /></p>
+</div>
+<div id="annual-returns-15" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/ELCEQ.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/ELCEQ.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="fabpr-fabricated-products" class="section level3">
+<h3>FABPR: Fabricated Products</h3>
+<div id="cumulative-returns-16" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/FABPR.cumret.png" /></p>
+</div>
+<div id="annual-returns-16" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/FABPR.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/FABPR.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="fin-trading" class="section level3">
+<h3>FIN: Trading</h3>
+<div id="cumulative-returns-17" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/FIN.cumret.png" /></p>
+</div>
+<div id="annual-returns-17" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/FIN.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/FIN.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="food-food-products" class="section level3">
+<h3>FOOD: Food Products</h3>
+<div id="cumulative-returns-18" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/FOOD.cumret.png" /></p>
+</div>
+<div id="annual-returns-18" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/FOOD.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/FOOD.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="fun-entertainment" class="section level3">
+<h3>FUN: Entertainment</h3>
+<div id="cumulative-returns-19" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/FUN.cumret.png" /></p>
+</div>
+<div id="annual-returns-19" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/FUN.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/FUN.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="gold-precious-metals" class="section level3">
+<h3>GOLD: Precious Metals</h3>
+<div id="cumulative-returns-20" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/GOLD.cumret.png" /></p>
+</div>
+<div id="annual-returns-20" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/GOLD.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/GOLD.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="guns-defense" class="section level3">
+<h3>GUNS: Defense</h3>
+<div id="cumulative-returns-21" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/GUNS.cumret.png" /></p>
+</div>
+<div id="annual-returns-21" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/GUNS.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/GUNS.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="hardw-computers" class="section level3">
+<h3>HARDW: Computers</h3>
+<div id="cumulative-returns-22" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/HARDW.cumret.png" /></p>
+</div>
+<div id="annual-returns-22" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/HARDW.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/HARDW.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="hlth-healthcare" class="section level3">
+<h3>HLTH: Healthcare</h3>
+<div id="cumulative-returns-23" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/HLTH.cumret.png" /></p>
+</div>
+<div id="annual-returns-23" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/HLTH.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/HLTH.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="hshld-consumer-goods" class="section level3">
+<h3>HSHLD: Consumer Goods</h3>
+<div id="cumulative-returns-24" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/HSHLD.cumret.png" /></p>
+</div>
+<div id="annual-returns-24" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/HSHLD.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/HSHLD.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="insur-insurance" class="section level3">
+<h3>INSUR: Insurance</h3>
+<div id="cumulative-returns-25" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/INSUR.cumret.png" /></p>
+</div>
+<div id="annual-returns-25" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/INSUR.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/INSUR.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="labeq-measuring-and-control-equipment" class="section level3">
+<h3>LABEQ: Measuring and Control Equipment</h3>
+<div id="cumulative-returns-26" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/LABEQ.cumret.png" /></p>
+</div>
+<div id="annual-returns-26" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/LABEQ.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/LABEQ.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="mach-machinery" class="section level3">
+<h3>MACH: Machinery</h3>
+<div id="cumulative-returns-27" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/MACH.cumret.png" /></p>
+</div>
+<div id="annual-returns-27" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/MACH.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/MACH.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="meals-restaurants-hotels-motels" class="section level3">
+<h3>MEALS: Restaurants, Hotels, Motels</h3>
+<div id="cumulative-returns-28" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/MEALS.cumret.png" /></p>
+</div>
+<div id="annual-returns-28" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/MEALS.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/MEALS.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="medeq-medical-equipment" class="section level3">
+<h3>MEDEQ: Medical Equipment</h3>
+<div id="cumulative-returns-29" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/MEDEQ.cumret.png" /></p>
+</div>
+<div id="annual-returns-29" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/MEDEQ.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/MEDEQ.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="mines-non-metallic-and-industrial-metal-mining" class="section level3">
+<h3>MINES: Non-Metallic and Industrial Metal Mining</h3>
+<div id="cumulative-returns-30" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/MINES.cumret.png" /></p>
+</div>
+<div id="annual-returns-30" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/MINES.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/MINES.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="oil-petroleum-and-natural-gas" class="section level3">
+<h3>OIL: Petroleum and Natural Gas</h3>
+<div id="cumulative-returns-31" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/OIL.cumret.png" /></p>
+</div>
+<div id="annual-returns-31" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/OIL.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/OIL.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="other-almost-nothing" class="section level3">
+<h3>OTHER: Almost Nothing</h3>
+<div id="cumulative-returns-32" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/OTHER.cumret.png" /></p>
+</div>
+<div id="annual-returns-32" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/OTHER.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/OTHER.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="paper-business-supplies" class="section level3">
+<h3>PAPER: Business Supplies</h3>
+<div id="cumulative-returns-33" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/PAPER.cumret.png" /></p>
+</div>
+<div id="annual-returns-33" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/PAPER.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/PAPER.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="persv-personal-services" class="section level3">
+<h3>PERSV: Personal Services</h3>
+<div id="cumulative-returns-34" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/PERSV.cumret.png" /></p>
+</div>
+<div id="annual-returns-34" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/PERSV.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/PERSV.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="rlest-real-estate" class="section level3">
+<h3>RLEST: Real Estate</h3>
+<div id="cumulative-returns-35" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/RLEST.cumret.png" /></p>
+</div>
+<div id="annual-returns-35" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/RLEST.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/RLEST.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="rtail-retail" class="section level3">
+<h3>RTAIL: Retail</h3>
+<div id="cumulative-returns-36" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/RTAIL.cumret.png" /></p>
+</div>
+<div id="annual-returns-36" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/RTAIL.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/RTAIL.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="rubbr-rubber-and-plastic-products" class="section level3">
+<h3>RUBBR: Rubber and Plastic Products</h3>
+<div id="cumulative-returns-37" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/RUBBR.cumret.png" /></p>
+</div>
+<div id="annual-returns-37" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/RUBBR.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/RUBBR.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="ships-shipbuilding-railroad-equipment" class="section level3">
+<h3>SHIPS: Shipbuilding, Railroad Equipment</h3>
+<div id="cumulative-returns-38" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/SHIPS.cumret.png" /></p>
+</div>
+<div id="annual-returns-38" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/SHIPS.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/SHIPS.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="smoke-tobacco-products" class="section level3">
+<h3>SMOKE: Tobacco Products</h3>
+<div id="cumulative-returns-39" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/SMOKE.cumret.png" /></p>
+</div>
+<div id="annual-returns-39" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/SMOKE.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/SMOKE.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="soda-candy-soda" class="section level3">
+<h3>SODA: Candy &amp; Soda</h3>
+<div id="cumulative-returns-40" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/SODA.cumret.png" /></p>
+</div>
+<div id="annual-returns-40" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/SODA.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/SODA.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="softw-computer-software" class="section level3">
+<h3>SOFTW: Computer Software</h3>
+<div id="cumulative-returns-41" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/SOFTW.cumret.png" /></p>
+</div>
+<div id="annual-returns-41" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/SOFTW.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/SOFTW.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="steel-steel-works-etc" class="section level3">
+<h3>STEEL: Steel Works Etc</h3>
+<div id="cumulative-returns-42" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/STEEL.cumret.png" /></p>
+</div>
+<div id="annual-returns-42" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/STEEL.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/STEEL.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="telcm-communication" class="section level3">
+<h3>TELCM: Communication</h3>
+<div id="cumulative-returns-43" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/TELCM.cumret.png" /></p>
+</div>
+<div id="annual-returns-43" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/TELCM.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/TELCM.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="toys-recreation" class="section level3">
+<h3>TOYS: Recreation</h3>
+<div id="cumulative-returns-44" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/TOYS.cumret.png" /></p>
+</div>
+<div id="annual-returns-44" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/TOYS.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/TOYS.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="trans-transportation" class="section level3">
+<h3>TRANS: Transportation</h3>
+<div id="cumulative-returns-45" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/TRANS.cumret.png" /></p>
+</div>
+<div id="annual-returns-45" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/TRANS.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/TRANS.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="txtls-textiles" class="section level3">
+<h3>TXTLS: Textiles</h3>
+<div id="cumulative-returns-46" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/TXTLS.cumret.png" /></p>
+</div>
+<div id="annual-returns-46" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/TXTLS.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/TXTLS.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="util-utilities" class="section level3">
+<h3>UTIL: Utilities</h3>
+<div id="cumulative-returns-47" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/UTIL.cumret.png" /></p>
+</div>
+<div id="annual-returns-47" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/UTIL.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/UTIL.annret.png" /></p>
+<p><br><br></p>
+</div>
+</div>
+<div id="whlsl-wholesale" class="section level3">
+<h3>WHLSL: Wholesale</h3>
+<div id="cumulative-returns-48" class="section level4">
+<h4>Cumulative Returns</h4>
+<p><img src="analysis/plots-fama-fench/WHLSL.cumret.png" /></p>
+</div>
+<div id="annual-returns-48" class="section level4">
+<h4>Annual Returns</h4>
+<p><img src="analysis/plots-fama-fench/WHLSL.fan.png" /></p>
+<p><img src="analysis/plots-fama-fench/WHLSL.annret.png" /></p>
+<p><br><br></p>
+<p><em>Source: <a href="https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html">Fama-French Data Library</a></em></p>
+</div>
+</div>
+
+&nbsp;
+&nbsp;
+<hr />
+<p style="text-align: center;">Copyright &copy; 2023 SAS Data Analytics Pvt. Ltd. All rights reserved.</p>
+<p style="text-align: center;"><a href="https://github.com/stockviz/reports/issues">&#x1F41E;</a></p>
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
