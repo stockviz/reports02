@@ -1,0 +1,78 @@
+---
+title: Margin Report
+subtitle: StockViz
+editor_options:
+  chunk_output_type: console
+output: 
+  html_document:
+    theme: flatly
+    highlight: tango
+    self_contained: false
+    lib_dir: risk/rmdlib	
+    includes:
+        in_header: header.html
+        after_body: ../footer.html		
+---
+
+```{r, init_chunk, echo = FALSE, message = FALSE, warning = FALSE}
+library('RODBC')
+library('quantmod')
+library('PerformanceAnalytics')
+library('tidyverse')
+library('tidyquant')
+library('reshape2')
+library('ggthemes')
+
+library('DT')
+
+#source("/mnt/hollandC/StockViz/R/config.r")
+source("/mnt/hollandr/config.r")
+
+options("scipen"=100)
+options(stringsAsFactors = FALSE)
+
+createdDate <- gsub(" 0", " ",format(Sys.Date(), "%B %d, %Y"))
+
+lcon <- odbcDriverConnect(sprintf("Driver={ODBC Driver 17 for SQL Server};Server=%s;Database=%s;Uid=%s;Pwd=%s;", ldbserver, ldbname, ldbuser, ldbpassword), case = "nochange", believeNRows = TRUE)
+
+```
+
+---
+date: `r createdDate`
+---
+
+```{r, plot_create_chunk, echo = FALSE, message = FALSE, warning = FALSE}
+
+mtfDate <- sqlQuery(lcon, "select max(time_stamp) from mtf_report")[[1]]
+mtfAmt <- sqlQuery(lcon, sprintf("select SYMBOL, TOT_FINANCED_LAKHS from mtf_report where time_stamp = '%s'", mtfDate))
+ffDate <- sqlQuery(lcon, sprintf("select max(time_stamp) from EQUITY_MISC_INFO where time_stamp <= '%s'", mtfDate))[[1]]
+ffDf <- sqlQuery(lcon, sprintf("select SYMBOL, FF_MKT_CAP_CR from EQUITY_MISC_INFO where time_stamp = '%s'", ffDate))
+
+bhavDts <- sqlQuery(lcon, "select top 10 time_stamp from px_history group by time_stamp order by time_stamp desc")
+startBhavDt <- min(bhavDts[,1])
+avgTrdVal <- sqlQuery(lcon, sprintf("select SYMBOL, avg(TOT_TRD_VAL) AVG_TRD_VAL from px_history 
+                                 where series in ('EQ', 'BE') 
+                                 and time_stamp >= '%s' 
+                                 group by symbol", startBhavDt))
+
+mtfStats <- mtfAmt |> 
+  inner_join(ffDf, join_by(SYMBOL)) |> 
+  inner_join(avgTrdVal, join_by(SYMBOL)) |> 
+  mutate(FF_PCT = 100*TOT_FINANCED_LAKHS/(10000*FF_MKT_CAP_CR), TRD_PCT = 100*TOT_FINANCED_LAKHS/(AVG_TRD_VAL/100000)) |>
+  select(-c(FF_MKT_CAP_CR, AVG_TRD_VAL)) |> arrange(desc(FF_PCT)) |>
+  mutate(more = ifelse(file.exists(sprintf("risk/in.%s.html", gsub("[^[:alnum:] ]| ", "", SYMBOL))), 
+							sprintf('<a href="/reports02/eq-in/risk/in.%s.html" target="_blank">>>></a>', gsub("[^[:alnum:] ]| ", "", SYMBOL)), 
+							""))
+
+mtfStatsDt <- datatable(mtfStats, rownames = F, class = 'cell-border stripe', 
+  							escape = c(rep(T, ncol(mtfStats)-1), rep(F, 1)), filter='none', 
+  							colnames = names(mtfStats), 
+  							options = list(dom = 't', pageLength = nrow(mtfStats)))	%>%
+              formatRound(names(mtfStats)[sapply(mtfStats, is.numeric)], 2)	
+
+```
+
+```{r, facet_print_chunk, echo = FALSE, results='asis', message = FALSE, warning = FALSE, fig.height=6, fig.width=20}
+cat(paste('*asof:', mtfDate, '*'))
+htmltools::tagList(mtfStatsDt)
+```
