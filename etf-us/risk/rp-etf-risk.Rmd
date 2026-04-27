@@ -97,11 +97,11 @@ ac <- etfMetaDf[etfMetaDf$SYMBOL == ticker,]$ASSET_CLASS[1]
 
 dataDf <- statsDf %>% inner_join(etfMetaDf, by='SYMBOL') %>% filter(ASSET_CLASS == ac) %>% select(SYMBOL, ID, VAL)
 
-rankTibs <- dataDf %>% 
+rankTibs <- dataDf %>% distinct(SYMBOL, ID, VAL) %>%
 	pivot_wider(names_from=ID, values_from=VAL) %>% 
 	mutate_at(vars(-SYMBOL), rank) 
 
-metricDf <- dataDf %>% filter(SYMBOL == ticker) %>%
+metricDf <- dataDf %>% filter(SYMBOL == ticker) %>% distinct(SYMBOL, ID, VAL) %>%
 	inner_join(rankTibs %>% filter(SYMBOL == ticker) %>% pivot_longer(!SYMBOL, names_to='ID', values_to='VAL') %>% select(ID, VAL), by='ID') %>%
 	inner_join(metricMap, by='ID') %>%
 	mutate(METRIC = paste0(DESC, ' (', ID, ')'), VAL = round(VAL.x, 5)) %>%

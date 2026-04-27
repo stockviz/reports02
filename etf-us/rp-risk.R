@@ -1,6 +1,7 @@
 library('RODBC')
 library('tidyverse')
 library('rmarkdown')
+library('scales')
 
 #Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/Pandoc")
 #source("C:/stockviz/r/config.r")
@@ -210,7 +211,7 @@ createPlots <- function(isDelta = F){
 
 			dataDf <- statsDf %>% inner_join(etfMetaDf, by='SYMBOL') %>% filter(ASSET_CLASS == ac) %>% select(SYMBOL, ID, VAL)
 
-			statsTibs <- dataDf %>% 
+			statsTibs <- dataDf %>% distinct(SYMBOL, ID, VAL) %>%
 					pivot_wider(names_from=ID, values_from=VAL) %>% 
 					mutate_at(vars(-SYMBOL), rescale)
 				
