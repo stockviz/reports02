@@ -1,0 +1,137 @@
+---
+title: US Listed Country ETFs
+subtitle: StockViz
+editor_options:
+  chunk_output_type: console
+output: 
+  html_document:
+    theme: flatly
+    highlight: tango
+    self_contained: false
+    lib_dir: risk/rmdlib	
+    includes:
+        in_header: header.html
+        after_body: ../footer.html		
+---
+
+```{r, init_chunk, echo = FALSE, message = FALSE, warning = FALSE}
+library('RODBC')
+library('quantmod')
+library('PerformanceAnalytics')
+library('tidyverse')
+library('tidyquant')
+library('reshape2')
+library('ggthemes')
+
+library('DT')
+
+#source("C:/stockviz/r/config.r")
+source("/mnt/hollandr/config.r")
+
+options("scipen"=100)
+options(stringsAsFactors = FALSE)
+
+createdDate <- gsub(" 0", " ",format(Sys.Date(), "%B %d, %Y"))
+
+lcon <- odbcDriverConnect(sprintf("Driver={ODBC Driver 17 for SQL Server};Server=%s;Database=%s;Uid=%s;Pwd=%s;", ldbserver, ldbname, ldbuser, ldbpassword), case = "nochange", believeNRows = TRUE)
+lconUs2 <- odbcDriverConnect(sprintf("Driver={ODBC Driver 17 for SQL Server};Server=%s;Database=%s;Uid=%s;Pwd=%s;", ldbserver, "StockVizUs2", ldbuser, ldbpassword), case = "nochange", believeNRows = TRUE)
+	
+```
+
+---
+date: `r createdDate`
+---
+
+*Reads: [The United States of ETFs](https://stockviz.biz/2021/07/11/the-united-states-of-etfs/), [Indians Investing Abroad](https://stockviz.biz/2021/07/18/indians-investing-abroad/) *
+
+```{r, plot_create_chunk, echo = FALSE, message = FALSE, warning = FALSE}
+etfs<-read.csv("../COUNTRY_ETFS.csv")
+etfs<-rbind(etfs, c('EEM'))
+
+spyMaxDt <- sqlQuery(lconUs2, "select max(time_stamp) from BHAV_EQ_TD where symbol='SPY'")[[1]]
+#spyMaxDt <- sqlQuery(lconUs2, sprintf("select max(time_stamp) from BHAV_EQ_TD where symbol='SPY' and time_stamp < '%s'", spyMaxDt))[[1]]
+etfMetaDf <- sqlQuery(lcon, "select SYMBOL, FUND from ETF_META")
+
+etfHorizonRets <- data.frame(TICKER = "", LB=0, RET=0.0)
+modelRets <- data.frame(Y = 0, RET = 0.0)
+modelNames <- c()
+for(i in 1:nrow(etfs)){
+	ticker<-etfs$TICKER[i]
+	eodVals <- sqlQuery(lconUs2, sprintf("select c, time_stamp from bhav_eq_td where SYMBOL = '%s' and time_stamp >= '%s' and time_stamp <= '%s'", ticker, "2009-12-25", spyMaxDt))
+	
+	if(max(eodVals$time_stamp) < spyMaxDt) next
+	
+	eodXts <- xts(eodVals[,1], eodVals[,2])
+	
+	for(lb in c(5, 10, 20, 50, 100, 200)){
+		etfHorizonRets <- rbind(etfHorizonRets, c(ticker, lb, as.numeric(Return.cumulative(dailyReturn(tail(eodXts, lb))))))
+	}
+	
+	annRets <- eodVals %>% mutate(time_stamp = as.Date(time_stamp), Y = year(time_stamp)) %>% group_by(Y) %>% tq_transmute(mutate_fun = annualReturn, col_rename = 'RET')
+	annCounts <- eodVals %>% mutate(Y = year(time_stamp)) %>% group_by(Y) %>% summarize(ct = n())
+	
+	annRets <- annRets %>% inner_join(annCounts, by='Y') %>% filter(ct > 210 & is.finite(RET)) %>% select(Y, RET)
+	
+	modelRets <- modelRets %>% full_join(annRets, by='Y')
+	modelNames <- c(modelNames, ticker)
+}
+
+etfHorizonRets <- etfHorizonRets[-1,]
+
+modelRets <- modelRets %>% set_names(c('Y', 'DUMMY', modelNames)) %>% filter(Y > 0) %>% select(where(~!all(is.na(.x)))) %>% arrange(Y)
+	
+orderedNames <- modelRets %>% summarize_all(list(~sum(is.finite(.)))) %>% pivot_longer(-Y) %>% arrange(desc(value)) %>% select(name)
+
+modelRetDf <- modelRets %>% relocate(all_of(c('Y', orderedNames$name))) %>% as.data.frame()
+ 
+toPlot <- melt(modelRetDf, id='Y')
+toPlot$value <- ifelse(is.finite(toPlot$value), toPlot$value, NA)
+toPlot$value <- 100*toPlot$value
+toPlot$Y <- factor(toPlot$Y, levels=unique(toPlot$Y))
+toPlot$variable <- factor(toPlot$variable, levels=unique(toPlot$variable))
+
+toPlot$color <- NA
+reds <- colorRampPalette(c("darkred", "#FFFDD0"))(nrow(toPlot[!is.na(toPlot$value) & toPlot$value < 0,]))
+greens <- colorRampPalette(c("#FFFDD0", "darkgreen"))(nrow(toPlot[!is.na(toPlot$value) & toPlot$value >= 0,]))
+toPlot[order(toPlot$value),]$color <- c(reds, greens, rep(NA, nrow(toPlot) - length(reds) - length(greens)))
+
+facetPlot <- ggplot(toPlot, aes(y=Y, x=variable, fill=color)) +
+	theme_economist() +
+	theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+	geom_tile() +
+	geom_text(aes(label= ifelse(is.finite(value), sprintf("%+.2f%%", value), "")), hjust = "center", size=2.5) +
+	scale_fill_identity() +
+	guides(fill="none") +
+	labs(x='', y='', title="Country ETF Returns ($)") +
+	annotate("text", x=length(modelNames), y=1, label = "@StockViz", hjust='right', vjust=0, col="white", cex=6, fontface = "bold", alpha = 0.8)
+
+etfHorizonRets$RET <- round(as.numeric(etfHorizonRets$RET) * 100, 2)
+etfHorizonRets$LB <- as.integer(etfHorizonRets$LB)
+
+etfRets <- etfHorizonRets %>% pivot_wider(names_from=LB, values_from=RET, names_prefix='D') %>%
+					inner_join(etfMetaDf, by=c('TICKER'='SYMBOL')) %>%
+					relocate(FUND, .after=TICKER) %>%
+					mutate(more = ifelse(file.exists(sprintf("risk/rp-%s.html", gsub("[^[:alnum:] ]| ", "", TICKER))), 
+							sprintf('<a href="/reports02/etf-us/risk/rp-%s.html" target="_blank">>>></a>', gsub("[^[:alnum:] ]| ", "", TICKER)), 
+							""),
+						   dig = ifelse(file.exists(sprintf("analysis/rp-%s.html", gsub("[^[:alnum:] ]| ", "", TICKER))), 
+							sprintf('<a href="/reports02/etf-us/analysis/rp-%s.html" target="_blank">///</a>', gsub("[^[:alnum:] ]| ", "", TICKER)), 
+							""))
+
+tableColNames <- names(etfRets)	
+tableColNames[1] <- ""
+tableColNames[2] <- ""
+
+etfRetDt <- datatable(etfRets, rownames = F, class = 'cell-border stripe', 
+							escape = c(rep(T, ncol(etfRets)-2), rep(F, 2)), filter='none', 
+							colnames = tableColNames, 
+							options = list(dom = 't', pageLength = nrow(etfRets)))	
+
+```
+
+```{r, facet_print_chunk, echo = FALSE, results='asis', message = FALSE, warning = FALSE, fig.height=6, fig.width=20}
+cat("\n\n### Annual Returns\n\n")
+print(facetPlot)
+cat("\n\n### Daily Returns\n\n")
+htmltools::tagList(etfRetDt)
+```
