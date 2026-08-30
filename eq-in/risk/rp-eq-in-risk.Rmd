@@ -1,0 +1,388 @@
+---
+params:
+  ticker: ""
+  fName: ""
+subtitle: Equity Metrics
+editor_options:
+  chunk_output_type: console
+output: 
+  html_document:
+    theme: flatly
+    highlight: tango
+    self_contained: false
+    lib_dir: rmdlib
+    includes:
+        in_header: ../header.html
+        after_body: ../../footer.html
+---
+
+```{r, init_chunk, echo = FALSE, message = FALSE, warning = FALSE}
+createdDate <- gsub(" 0", " ",format(Sys.Date(), "%B %d, %Y"))
+idPath <- "../../"
+
+library('RODBC')
+library('DBI')
+library('RSQLite')
+library('tidyverse')
+library('lubridate')
+library('DT')
+
+library('scales')
+
+options(stringsAsFactors = FALSE)
+options("scipen"=100)
+
+ticker <- params$ticker
+fName <- params$fName
+
+#source("/mnt/hollandC/StockViz/R/config.r")
+#equitySummDb <- "/mnt/data/recoll/EQUITY.db"
+
+source("/mnt/hollandr/config.r")
+equitySummDb <- "/srv/stockviz-dashboard/EQUITY.db"
+
+bucketUrl <- "https://etf-us-risk-plots.stockviz.biz/"
+
+lcon <- odbcDriverConnect(sprintf("Driver={ODBC Driver 17 for SQL Server};Server=%s;Database=%s;Uid=%s;Pwd=%s;", ldbserver, ldbname, ldbuser, ldbpassword), case = "nochange", believeNRows = TRUE)
+
+tickerName <- sqlQuery(lcon, sprintf("select top 1 NAME from EQUITY_TICKER where symbol='%s'", ticker))[[1]]
+industryDf <- sqlQuery(lcon, sprintf("select basic_industry 
+                                   from nse_industry a 
+                                   where a.symbol = '%s' 
+                                   and a.time_stamp = (select max(b.time_stamp) 
+                                         from nse_industry b 
+                                         where b.symbol = a.symbol)", ticker))
+
+if(nrow(industryDf) > 0){
+  industry <- industryDf[[1]]
+  indusLink <- paste0('/reports01/index/industry/rp-', gsub("[^[:alnum:] ]| ", "", industry), '.html')
+  indusLinkTxt <- sprintf("[%s](%s)", industry, indusLink)
+} else {
+  indusLinkTxt <- ""
+}
+fanPlotName <- paste0(bucketUrl, fName, ".fan.png")
+cumPlotName <- paste0(bucketUrl, fName, ".cumret.png")
+annPlotName <- paste0(bucketUrl, fName, ".annret.png")
+
+smaCumPlotName <- NULL
+if(file.exists(sprintf("plots/%s.sma.cumret.png", fName))){
+  smaCumPlotName <- paste0(bucketUrl, fName, ".sma.cumret.png")
+}
+
+epsFileName <- NULL
+if(file.exists(sprintf("plots/%s.eps.png", fName))){
+  epsFileName <- paste0(bucketUrl, fName, ".eps.png")
+}
+
+revenueFileName <- NULL
+if(file.exists(sprintf("plots/%s.RevenueFromOperations.png", fName))){
+  revenueFileName <- paste0(bucketUrl, fName, ".RevenueFromOperations.png")
+}
+
+ebitFileName <- NULL
+if(file.exists(sprintf("plots/%s.ebit.png", fName))){
+  ebitFileName <- paste0(bucketUrl, fName, ".ebit.png")
+}
+
+metric1FileName <- NULL
+if(file.exists(sprintf("plots/%s.metric-1.png", fName))){
+  metric1FileName <- paste0(bucketUrl, fName, ".metric-1.png")
+}
+metric2FileName <- NULL
+if(file.exists(sprintf("plots/%s.metric-2.png", fName))){
+  metric2FileName <- paste0(bucketUrl, fName, ".metric-2.png")
+}
+bvFileName <- NULL
+if(file.exists(sprintf("plots/%s.book-value.png", fName))){
+  bvFileName <- paste0(bucketUrl, fName, ".book-value.png")
+}
+
+ownershipFileName <- NULL
+if(file.exists(sprintf("plots/%s.ownership.png", fName))){
+  ownershipFileName <- paste0(bucketUrl, fName, ".ownership.png")
+}
+
+mtfFileName <- NULL
+if(file.exists(sprintf("plots/%s.mtf.png", fName))){
+  mtfFileName <- paste0(bucketUrl, fName, ".mtf.png")
+}
+
+aiSummaries <- NULL
+mydb <- dbConnect(RSQLite::SQLite(), dbname = equitySummDb, flags = RSQLite::SQLITE_RO)
+aiAsOf <- dbGetQuery(mydb, "select max(as_of) from EQUITY_SUMMARY where SYMBOL = $1", params=list(ticker))
+if(nrow(aiAsOf) > 0 && !is.na(aiAsOf[[1]])){
+  aiSummaries <- dbGetQuery(mydb, "SELECT * FROM EQUITY_SUMMARY WHERE SYMBOL = $1 and AS_OF = $2", params=list(ticker, aiAsOf[[1]]))
+}
+dbDisconnect(mydb)
+
+brokerTimeline <- NULL
+narrative <- NULL
+brokerDb <- "/srv/data/doc_meta.db"
+if(file.exists(brokerDb)){
+  bdb <- dbConnect(RSQLite::SQLite(), dbname = brokerDb, flags = RSQLite::SQLITE_RO)
+  brokerTimeline <- dbGetQuery(bdb, "
+    SELECT AUTO_ID, REPORT_DATE, RECOMMENDATION, PREDICTED_RETURN, ACTUAL_RETURN, TARGET_DATE, OUTCOME
+    FROM RR_TIMELINE
+    WHERE SYMBOL = $1
+      AND REPORT_DATE IS NOT NULL AND REPORT_DATE != ''
+      AND RECOMMENDATION IS NOT NULL AND RECOMMENDATION != ''
+    ORDER BY REPORT_DATE DESC", params = list(ticker))
+  if(dbExistsTable(bdb, "RR_NARRATIVE")){
+    narrative <- dbGetQuery(bdb, "SELECT NARRATIVE FROM RR_NARRATIVE WHERE SYMBOL = $1", params = list(ticker))
+  }
+  dbDisconnect(bdb)
+}
+
+brokerAuthors <- sqlQuery(lcon, sprintf("SELECT AUTO_ID, AUTHOR FROM BROKER_REPORT WHERE SYMBOL = '%s'", ticker))
+if(!is.data.frame(brokerAuthors) || nrow(brokerAuthors) == 0){
+  brokerAuthors <- NULL
+}
+
+```
+
+---
+title: `r ticker`
+date: `r createdDate`
+---
+
+# `r tickerName`
+`r indusLinkTxt`
+
+## Annual Returns
+
+![](`r fanPlotName`)
+
+![](`r annPlotName`)
+
+## Cumulative Returns and Drawdowns
+
+![](`r cumPlotName`)
+
+```{r, plot_cumsma_chunk, results='asis', echo = FALSE, message = FALSE, warning = FALSE, fig.height=6, fig.width=12} 
+
+if(!is.null(smaCumPlotName)){
+	cat("\n\n")
+	cat("![](", smaCumPlotName, ")")
+	cat("\n\n")
+}
+cat("<br><br>")
+```
+
+## Fundamentals
+
+\
+
+```{r, plot_eps_chunk, results='asis', echo = FALSE, message = FALSE, warning = FALSE, fig.height=12, fig.width=12} 
+
+if(!is.null(epsFileName)){
+	cat("\n\n")
+	cat("![](", epsFileName, ")")
+	cat("\n\n")
+}
+cat("<br><br>")
+
+if(!is.null(revenueFileName)){
+	cat("\n\n")
+	cat("![](", revenueFileName, ")")
+	cat("\n\n")
+}
+cat("<br><br>")
+
+if(!is.null(ebitFileName)){
+	cat("\n\n")
+	cat("![](", ebitFileName, ")")
+	cat("\n\n")
+}
+cat("<br><br>")
+
+if(!is.null(metric1FileName)){
+	cat("\n\n")
+	cat("![](", metric1FileName, ")")
+	cat("\n\n")
+}
+cat("<br><br>")
+
+if(!is.null(metric2FileName)){
+	cat("\n\n")
+	cat("![](", metric2FileName, ")")
+	cat("\n\n")
+}
+cat("<br><br>")
+
+if(!is.null(bvFileName)){
+	cat("\n\n")
+	cat("![](", bvFileName, ")")
+	cat("\n\n")
+}
+cat("<br><br>")
+```
+
+## Ownership
+
+\
+
+```{r, plot_ownership_chunk, results='asis', echo = FALSE, message = FALSE, warning = FALSE, fig.height=12, fig.width=12} 
+
+if(!is.null(ownershipFileName)){
+	cat("\n\n")
+	cat("![](", ownershipFileName, ")")
+	cat("\n\n")
+}
+cat("<br><br>")
+```
+
+
+## Margined
+
+\
+
+```{r, plot_mtf_chunk, results='asis', echo = FALSE, message = FALSE, warning = FALSE, fig.height=12, fig.width=12} 
+
+if(!is.null(mtfFileName)){
+	cat("\n\n")
+	cat("![](", mtfFileName, ")")
+	cat("\n\n")
+}
+cat("<br><br>")
+```
+
+\
+
+```{r, ai_summary_chunk, echo = FALSE, results='asis', message = FALSE, warning = FALSE, fig.height=12, fig.width=12}
+
+if(!is.null(aiSummaries) && nrow(aiSummaries) > 0 && !is.na(aiSummaries$SUMMARY[1]) && !is.null(aiSummaries$SUMMARY[1])){
+  cat("## AI Summary", "\n\n")
+  cat("*asof: ", aiAsOf[[1]], " *", "\n\n")
+  summ <- paste0(unlist(aiSummaries$SUMMARY[1]), collapse = "")
+  summ <- str_replace_all(summ, "#### ", "###### ")
+  summ <- str_replace_all(summ, "### ", "##### ")
+  summ <- str_replace_all(summ, "## ", "#### ")
+  summ <- str_replace_all(summ, "# ", "### ")
+  
+  cat(summ, "\n\n")
+}
+
+```
+
+```{r, broker_narrative_chunk, echo = FALSE, results='asis', message = FALSE, warning = FALSE}
+
+n <- NULL
+if(!is.null(narrative) && nrow(narrative) > 0 && !is.na(narrative$NARRATIVE[1]) && nzchar(trimws(narrative$NARRATIVE[1]))){
+  n <- tryCatch(jsonlite::fromJSON(narrative$NARRATIVE[1]), error = function(e) NULL)
+}
+
+arc <- character()
+fears <- character()
+optimism <- character()
+if(!is.null(n)){
+  if(!is.null(n$arc)){
+    arc <- as.character(n$arc)
+    arc <- arc[!is.na(arc) & nzchar(trimws(arc))]
+  }
+  if(!is.null(n$fears_came_true)){
+    fears <- as.character(n$fears_came_true)
+    fears <- fears[!is.na(fears) & nzchar(trimws(fears))]
+  }
+  if(!is.null(n$optimism_failed)){
+    optimism <- as.character(n$optimism_failed)
+    optimism <- optimism[!is.na(optimism) & nzchar(trimws(optimism))]
+  }
+}
+
+if(length(arc) > 0 || length(fears) > 0 || length(optimism) > 0){
+  cat("## Broker Narrative", "\n\n")
+  if(length(arc) > 0){
+    cat(arc[1], "\n\n")
+  }
+  if(length(fears) > 0){
+    cat("**Fears that came true**", "\n\n")
+    cat(paste0("- ", fears, collapse = "\n"), "\n\n")
+  }
+  if(length(optimism) > 0){
+    cat("**Optimism that failed**", "\n\n")
+    cat(paste0("- ", optimism, collapse = "\n"), "\n\n")
+  }
+}
+```
+
+```{r, broker_timeline_chunk, echo = FALSE, results='asis', message = FALSE, warning = FALSE, fig.height=12, fig.width=12}
+
+if(!is.null(brokerTimeline) && nrow(brokerTimeline) > 0){
+
+  normRec <- function(x) {
+    x <- trimws(x)
+    up <- toupper(x)
+    dplyr::case_when(
+      up == "BUY" ~ "Buy",
+      up == "ACCUMULATE" ~ "Accumulate",
+      up == "ADD" ~ "Add",
+      up == "SELL" ~ "Sell",
+      up == "REDUCE" ~ "Reduce",
+      up == "HOLD" ~ "Hold",
+      up == "OVERWEIGHT" ~ "Overweight",
+      up == "UNDERWEIGHT" ~ "Underweight",
+      up %in% c("EQUALWEIGHT", "EQUAL-WEIGHT") ~ "Equal-weight",
+      up %in% c("NEUTRAL", "NE") ~ "Neutral",
+      up == "POSITIVE" ~ "Positive",
+      up %in% c("NOT RATED", "NR", "UNRATED", "NON-RATED") ~ "Not Rated",
+      up == "DROPPING COVERAGE" ~ "Dropping Coverage",
+      up == "EXIT" ~ "Exit",
+      up == "SUBSCRIBE" ~ "Subscribe",
+      up == "UNDER REVIEW" ~ "Under Review",
+      TRUE ~ stringr::str_to_title(x)
+    )
+  }
+
+  fmtD <- function(x) {
+    x[x == ""] <- NA
+    d <- as.Date(x)
+    out <- format(d, "%Y-%m-%d")
+    out[is.na(d)] <- NA
+    out
+  }
+
+  rngTxt <- fmtD(range(brokerTimeline$REPORT_DATE))
+
+  brokerTimeline$AUTO_ID <- as.numeric(brokerTimeline$AUTO_ID)
+  if(!is.null(brokerAuthors)){
+    brokerAuthors$AUTO_ID <- as.numeric(brokerAuthors$AUTO_ID)
+    tl0 <- brokerTimeline |> left_join(brokerAuthors, by = "AUTO_ID")
+  } else {
+    tl0 <- brokerTimeline |> mutate(AUTHOR = NA_character_)
+  }
+
+  tl <- tl0 |>
+    mutate(
+      REPORT_DATE = fmtD(REPORT_DATE),
+      TARGET_DATE = fmtD(TARGET_DATE),
+      REC = normRec(RECOMMENDATION),
+      BROKER = ifelse(is.na(AUTHOR) | AUTHOR == "", "\u2014", AUTHOR),
+      PRED = PREDICTED_RETURN,
+      ACT = ACTUAL_RETURN,
+      OUTCOME = ifelse(is.na(OUTCOME) | OUTCOME == "", "NA", OUTCOME)
+    ) |>
+    select(REPORT_DATE, BROKER, REC, PRED, ACT, OUTCOME, TARGET_DATE)
+
+  tl$TARGET_DATE[is.na(tl$TARGET_DATE)] <- ""
+
+  tlDt <- datatable(
+    tl, rownames = FALSE,
+    colnames = c("Report Date", "Broker", "Call", "Predicted", "Actual", "Outcome", "Target Date"),
+    class = 'cell-border stripe',
+    filter = 'none',
+    options = list(pageLength = nrow(tl), dom = 't', order = list(list(0, 'desc')))
+  ) |>
+    formatPercentage(c('PRED', 'ACT'), digits = 1) |>
+    formatStyle('PRED', color = styleInterval(c(-0.001, 0.001), c('#8B0000', '#777777', '#006400'))) |>
+    formatStyle('ACT',  color = styleInterval(c(-0.001, 0.001), c('#8B0000', '#777777', '#006400'))) |>
+    formatStyle('OUTCOME',
+      color = styleEqual(c('SUCCESS','DISAPPOINTMENT','NEUTRAL','FLAT','PENDING','NA'),
+                         c('#006400','#8B0000','#555555','#777777','#b8860b','#999999')),
+      fontWeight = 'bold')
+
+  cat("## Broker Timeline", "\n\n")
+  cat(sprintf("*%d broker calls · %s to %s*\n\n", nrow(tl), rngTxt[1], rngTxt[2]))
+
+  htmltools::tagList(tlDt)
+}
+```
