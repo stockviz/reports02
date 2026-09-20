@@ -1,0 +1,94 @@
+---
+params:
+  name: ""
+  etf: ""
+subtitle: Equity Portfolio Changes
+editor_options:
+  chunk_output_type: console
+output: 
+  html_document:
+    theme: flatly
+    highlight: tango
+    self_contained: false
+    lib_dir: rmdlib
+    includes:
+        in_header: ../header.html
+        after_body: ../../footer.html
+---
+
+```{r, init_chunk, echo = FALSE, message = FALSE, warning = FALSE}
+createdDate <- gsub(" 0", " ",format(Sys.Date(), "%B %d, %Y"))
+reportPath <- "/analysis"
+library('RODBC')
+library('quantmod')
+library('PerformanceAnalytics')
+
+library('tidyverse')
+library('lubridate')
+library('ggthemes')
+library('reshape2')
+library('viridis')
+library('DT')
+library('ggrepel')
+
+options(stringsAsFactors = FALSE)
+options("scipen"=100)
+
+etf <- params$etf
+name <- params$name
+
+#source("C:/stockviz/r/config.r")
+source("/mnt/hollandr/config.r")
+
+lconUs2 <- odbcDriverConnect(sprintf("Driver={ODBC Driver 17 for SQL Server};Server=%s;Database=%s;Uid=%s;Pwd=%s;", ldbserver, "StockVizUs2", ldbuser, ldbpassword), case = "nochange", believeNRows = TRUE)
+
+```
+
+---
+title: `r name`
+date: `r createdDate`
+---
+
+```{r, change_chunk, echo = FALSE, message = FALSE, warning = FALSE}
+
+indexChangeDates <- sqlQuery(lconUs2, sprintf("select distinct(TIME_STAMP) ts from ETF_CONSTITUENTS where ETF = '%s' order by ts desc", etf))[,1]
+
+changeList <- list()
+for(i in 2:length(indexChangeDates)){
+	newSet <- sqlQuery(lconUs2, sprintf("select symbol, name from ETF_CONSTITUENTS where ETF = '%s' and ASSET_TYPE = 'equity' and TIME_STAMP = '%s'", etf, indexChangeDates[i-1]))
+	oldSet <- sqlQuery(lconUs2, sprintf("select symbol, name from ETF_CONSTITUENTS where ETF = '%s' and ASSET_TYPE = 'equity' and TIME_STAMP = '%s'", etf, indexChangeDates[i]))
+	
+    if(any(is.na(newSet)) || any(is.na(oldSet)) || nrow(newSet) == 0 || nrow(oldSet) == 0) next
+
+	entries <- setdiff(newSet$symbol, oldSet$symbol)
+	exits <- setdiff(oldSet$symbol, newSet$symbol)
+	
+	if(length(entries) == 0 && length(exits) == 0) next
+	
+	changeDf <- data.frame(Entries = rep("", max(length(entries), length(exits))), Exits = rep("", max(length(entries), length(exits))))
+	
+	if(length(entries) > 0){
+		for(ei in 1:length(entries)){
+			changeDf$Entries[ei] <- paste0(entries[ei], '/', newSet[which(newSet$symbol == entries[ei]),]$name[1])
+		}
+	}
+	
+	if(length(exits) > 0){
+		for(ei in 1:length(exits)){
+			changeDf$Exits[ei] <- paste0(exits[ei], '/', oldSet[which(oldSet$symbol == exits[ei]),]$name[1]) 
+		}
+	}
+	
+	changeList[[toString(indexChangeDates[i-1])]] <- datatable(changeDf, 
+																caption = paste("On ", indexChangeDates[i-1]), 
+																rownames = F, 
+																class = 'cell-border stripe', 
+																filter='none', 
+																options = list(dom = 't', autoWidth = T, pageLength = nrow(changeDf)+5, columnDefs = list(list(width = '40%', visible=T, targets = '_all'))))
+}
+
+```
+
+```{r, print_changes_table_chunk, echo = FALSE, results='asis', message = FALSE}
+htmltools::tagList(lapply(changeList, print))
+```

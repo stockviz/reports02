@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+<meta name="date" content="2026-09-18" />
+
+<title>HDFCAMC</title>
+
+<script src="rmdlib/header-attrs-2.30/header-attrs.js"></script>
+<script src="rmdlib/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="rmdlib/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="rmdlib/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="rmdlib/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="rmdlib/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="rmdlib/navigation-1.1/tabsets.js"></script>
+<link href="rmdlib/htmltools-fill-0.5.9/fill.css" rel="stylesheet" />
+<script src="rmdlib/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<link href="rmdlib/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="rmdlib/datatables-binding-0.32/datatables.js"></script>
+<link href="rmdlib/dt-core-1.13.6/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="rmdlib/dt-core-1.13.6/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="rmdlib/dt-core-1.13.6/js/jquery.dataTables.min.js"></script>
+<link href="rmdlib/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+<script src="rmdlib/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+<link href="rmdlib/font-awesome-6.4.0/css/all.min.css" rel="stylesheet" />
+<link href="rmdlib/font-awesome-6.4.0/css/v4-shims.min.css" rel="stylesheet" />
+<meta name="description" content="Indian equities analysis, margin reports, risk, etc..." />
+<meta property="og:image" content="https://avatars3.githubusercontent.com/u/21966469?s=400&v=4" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">StockViz</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-globe"></span>
+     
+    Macro
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/macro/rp-bnd.html">Fixed Income</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/macro/rp-cur.html">Currencies</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/macro/rp-cmdy.html">Commodities</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-arrows-v"></span>
+     
+    52w H&amp;L
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/52wk-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/52wk-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-rocket"></span>
+     
+    ATH
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/ath-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/ath-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-magnet"></span>
+     
+    Drawdowns
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/drawdowns-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/drawdowns-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-train"></span>
+     
+    Streaks
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/streaks-IN.html">India</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/streaks-US.html">US</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-hand-pointer-o"></span>
+     
+    Indian Indices
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-risk.html">Performance Metrics</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-IN.html">Index Changes</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-MKT-CAP.html">Classification Changes</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-industry.html">Industry Metrics</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-syn.html">Synthetic Indices</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-vol-NIFTY.html">NIFTY Volatility</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/index/rp-valuations.html">Valuations</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports01/eq/results-IN.html">Result Dates</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/eq-in/rp-margin.html">Margin Report</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-shopping-bag"></span>
+     
+    Funds
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports03/mf/rp-IN.html">Indian Mutual Funds</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports03/pms/rp-IN.html">Indian PMS</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-risk.html">US ETFs</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-sector.html">US Sector ETFs</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-country.html">Country $ ETFs</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-percent"></span>
+     
+    Fama-French
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-fama-french-industry.html">Industry</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-fama-french-factors.html">Factors</a>
+    </li>
+    <li>
+      <a href="https://stockviz.github.io/reports02/etf-us/rp-fama-french-regression.html">Regressions</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://stockviz.biz">
+    <span class="fa fa-home"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="https://stockviz.substack.com">
+    <span class="fa fa-envelope-o"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">HDFCAMC</h1>
+<h3 class="subtitle">Equity Metrics</h3>
+<h4 class="date">September 18, 2026</h4>
+
+</div>
+
+
+<div id="hdfc-asset-management-company-limited" class="section level1">
+<h1>HDFC Asset Management Company Limited</h1>
+<p><a
+href="/reports01/index/industry/rp-AssetManagementCompany.html">Asset
+Management Company</a></p>
+<div id="annual-returns" class="section level2">
+<h2>Annual Returns</h2>
+<p><img
+src="https://etf-us-risk-plots.stockviz.biz/in.HDFCAMC.fan.png" /></p>
+<p><img
+src="https://etf-us-risk-plots.stockviz.biz/in.HDFCAMC.annret.png" /></p>
+</div>
+<div id="cumulative-returns-and-drawdowns" class="section level2">
+<h2>Cumulative Returns and Drawdowns</h2>
+<p><img
+src="https://etf-us-risk-plots.stockviz.biz/in.HDFCAMC.cumret.png" /></p>
+<p><img
+src="https://etf-us-risk-plots.stockviz.biz/in.HDFCAMC.sma.cumret.png" /></p>
+<p><br><br></p>
+</div>
+<div id="fundamentals" class="section level2">
+<h2>Fundamentals</h2>
+<p><br />
+</p>
+<p><img
+src="https://etf-us-risk-plots.stockviz.biz/in.HDFCAMC.eps.png" /></p>
+<p><br><br></p>
+<p><img
+src="https://etf-us-risk-plots.stockviz.biz/in.HDFCAMC.RevenueFromOperations.png" /></p>
+<p><br><br></p>
+<p><img
+src="https://etf-us-risk-plots.stockviz.biz/in.HDFCAMC.ebit.png" /></p>
+<p><br><br><br><br><br><br><br><br></p>
+</div>
+<div id="ownership" class="section level2">
+<h2>Ownership</h2>
+<p><br />
+</p>
+<p><img
+src="https://etf-us-risk-plots.stockviz.biz/in.HDFCAMC.ownership.png" /></p>
+<p><br><br></p>
+</div>
+<div id="margined" class="section level2">
+<h2>Margined</h2>
+<p><br />
+</p>
+<p><img
+src="https://etf-us-risk-plots.stockviz.biz/in.HDFCAMC.mtf.png" /></p>
+<p><br><br></p>
+<p><br />
+</p>
+</div>
+<div id="ai-summary" class="section level2">
+<h2>AI Summary</h2>
+<p><em>asof: 2026-09-14 </em></p>
+<div id="headwinds-and-challenges" class="section level4">
+<h4>Headwinds and Challenges</h4>
+<ul>
+<li><strong>Cyber-security incident:</strong> HDFC AMC disclosed a
+cyber-security incident that occurred on May 16, 2026. The incident was
+reported to regulatory and law enforcement authorities, a specialist
+firm was engaged to assess IT systems, and additional safeguards and
+controls were implemented. On May 29, 2026, the Company obtained interim
+relief from the Hon’ble High Court of Bombay restraining unauthorized
+dissemination, circulation or use of confidential data and other
+non-public information relating to the Company. The Company stated the
+incident did not affect continuity of business operations and, based on
+assessment to date, did not have a material impact on financial results
+for the quarter ended June 30, 2026.</li>
+<li><strong>Expense growth outpacing revenue growth:</strong> For Q1
+FY27 versus Q1 FY26, total expenses increased 26% while revenue from
+operations increased 14%. Employee benefit expenses rose 31%, other
+expenses rose 21%, fees and commission expenses rose 54%, and
+depreciation and amortisation rose 19%. Sequentially, total expenses
+rose 19% against a 5% rise in revenue from operations.</li>
+<li><strong>Operating profit growth lagging revenue growth:</strong>
+Operating profit from the core AM business rose 10% year-on-year against
+14% revenue growth, and only 1% sequentially (₹8,276 million in Q1 FY27
+versus ₹8,227 million in Q4 FY26).</li>
+<li><strong>Lower share of “Others” in AUM mix versus industry:</strong>
+HDFC MF’s “Others” category was 7.4% of QAAUM and 6.8% of closing AUM in
+June 2026, versus 18.4% and 18.0% respectively for the industry.</li>
+<li><strong>Debt-oriented mix declining:</strong> Debt-oriented QAAUM
+share fell from 20.5% in June 2025 to 17.7% in June 2026, and closing
+AUM share fell from 20.9% to 17.3% over the same period.</li>
+</ul>
+</div>
+<div id="tailwinds-and-growth-prospects" class="section level4">
+<h4>Tailwinds and Growth Prospects</h4>
+<ul>
+<li><strong>AUM growth:</strong> QAAUM rose to ₹9,351 billion for the
+quarter ended June 30, 2026 from ₹8,286 billion a year earlier, with an
+11.2% QAAUM market share. Closing AUM was ₹9.32 trillion as on June 30,
+2026. Industry closing AUM grew 11% year-on-year (equity 13%) from June
+2025 to June 2026.</li>
+<li><strong>Leadership in actively managed equity:</strong> QAAUM in
+actively managed equity-oriented funds (equity-oriented QAAUM excluding
+index funds) was ₹5,740 billion with a 12.8% market share; the AMC is
+described as amongst the largest actively managed equity-oriented mutual
+fund managers in the country.</li>
+<li><strong>Equity-heavy mix:</strong> The equity-to-non-equity QAAUM
+ratio was 66:34 versus the industry’s 57:43 for the quarter ended June
+30, 2026. Equity-oriented share of closing AUM rose to 68.1% in June
+2026 from 66.1% in June 2025.</li>
+<li><strong>Individual investor franchise:</strong> Individual investors
+contributed 69% of monthly average AUM for June 2026 versus 61% for the
+industry. Total live accounts were 31.1 million and unique customers
+17.1 million as on June 30, 2026, a penetration of 28% against the
+industry’s 61.9 million.</li>
+<li><strong>Systematic flows:</strong> 17.2 million systematic
+transactions worth ₹48.1 billion were processed in June 2026.</li>
+<li><strong>Distribution reach:</strong> Over 1,10,000 empaneled
+distribution partners across MFDs, national distributors and banks,
+serviced through 280 offices, of which 196 are in B-30 locations. B-30
+contributed 19.6% of total monthly average AUM for June 2026, and the
+Company reported an 11.8% market share in B-30 cities, serving customers
+across ~98% of all pincodes in India.</li>
+<li><strong>Digital and service metrics:</strong> 4.5+ average app
+rating, 95%+ query resolution within one day, an AI chatbot built with a
+compliance-first approach, 24x7 account statement access via WhatsApp,
+and enhanced mobile app security and corporate website technology
+stack.</li>
+<li><strong>Alternatives and PMS expansion:</strong> PMS AUM of ₹122
+billion (₹70bn non-discretionary, ₹50bn discretionary, ₹2bn advisory),
+with mandates awarded from EPFO and SPFO. AIF commitments of ₹26
+billion: ₹14bn HDFC AMC Structured Credit Fund-I (with IFC onboarded as
+partner and anchor investor) and ₹12bn HDFC AMC Select AIF FOF-I. The
+HDFC AMC Select Opportunities Fund (CAT II) was launched and approval
+was received for HDFC AMC Emerging Opportunities Fund-I (CAT III).</li>
+<li><strong>ESG rating:</strong> NSE Sustainability Ratings and
+Analytics Limited assigned an ESG rating of “74” via email dated August
+10, 2026, independently prepared based on publicly available
+information; the Company stated it had not engaged NSE Sustainability
+for the rating.</li>
+<li><strong>ESG and outreach:</strong> 29% of the workforce and 23% of
+executive management are women; 8,700+ employee training hours; 83% of
+the workforce holds at least one additional certification (CFA, CFP,
+NISM or equivalent). Outreach included 24 lakh+ women reached through
+Barni Se Azadi and SIP Saheli, 1,500+ individuals through Bharosaan,
+3,500+ retirees through Future Ready, 1,000+ healthcare professionals,
+70,000+ students, and 15,000+ armed forces personnel and families
+through Mission Samriddhi.</li>
+<li><strong>Investor engagement schedule:</strong> Multiple
+investor/analyst meetings and conferences are scheduled through
+September 2026, including the HDFC AMC sell-side analyst group meeting
+on September 8, 2026, UBS India Summit 2026 on September 10, 2026,
+Jefferies 5th India Forum on September 17, 2026, J.P. Morgan India
+Conference on September 21, 2026, and Anand Rathi Annual Flagship
+Conference on September 22, 2026.</li>
+</ul>
+</div>
+<div id="key-risks" class="section level4">
+<h4>Key Risks</h4>
+<ul>
+<li><strong>Cyber-security and data protection risk:</strong> The May
+16, 2026 incident and the resulting Bombay High Court interim relief of
+May 29, 2026 highlight exposure to unauthorized dissemination or use of
+confidential and non-public information. The Company continues to
+strengthen its cyber-security framework with additional safeguards and
+controls.</li>
+<li><strong>Cost inflation risk:</strong> The 26% year-on-year and 19%
+sequential rise in total expenses, including a 31% year-on-year rise in
+employee benefit expenses and 54% rise in fees and commission expenses,
+indicates margin pressure if revenue growth does not keep pace.</li>
+<li><strong>Concentration in equity-oriented products:</strong> With 66%
+of QAAUM and 68.1% of closing AUM in equity-oriented schemes,
+performance and flows are sensitive to equity market conditions.</li>
+<li><strong>Declining debt-oriented share:</strong> The falling
+debt-oriented mix (17.7% of QAAUM and 17.3% of closing AUM in June 2026)
+reduces diversification across asset classes.</li>
+<li><strong>Dependence on individual investors and systematic
+flows:</strong> 69% of monthly average AUM comes from individual
+investors, and systematic transactions are a significant flow channel;
+changes in retail sentiment or SIP behaviour could affect AUM.</li>
+<li><strong>Regulatory and legal exposure:</strong> The cyber incident
+was reported to regulatory and law enforcement authorities, and the
+Company obtained interim relief from the Bombay High Court, indicating
+ongoing legal and regulatory attention.</li>
+<li><strong>Forward-looking statement risk:</strong> The presentation
+notes that forward-looking statements involve risks and uncertainties,
+and actual future performance may differ materially due to factors
+including India’s political and economic status, government policies,
+applicable laws, global capital markets, the mutual fund industry in
+India, and international and domestic events beyond the Company’s
+control.</li>
+<li><strong>Meeting schedule risk:</strong> The schedule of
+investor/analyst meetings may undergo change due to exigencies on the
+part of the investor or the Company.</li>
+</ul>
+</div>
+<div id="management-guidance-versus-observed-business-performance"
+class="section level4">
+<h4>Management Guidance Versus Observed Business Performance</h4>
+<ul>
+<li><strong>Guidance on meeting schedule:</strong> Management stated
+that the schedule of investor/analyst meetings and conferences through
+September 2026 may undergo change due to exigencies on the part of the
+investor or the Company. No specific financial guidance was provided in
+the supplied material.</li>
+<li><strong>Cyber incident impact:</strong> Management stated the May
+16, 2026 cyber-security incident did not affect continuity of business
+operations and, based on assessment to date, did not have a material
+impact on financial results for the quarter ended June 30, 2026.
+Observed performance for Q1 FY27 showed revenue from operations of
+₹10,985 million (up 14% year-on-year), operating profit of ₹8,276
+million (up 10% year-on-year), profit before tax of ₹10,902 million (up
+11% year-on-year), and profit after tax of ₹8,383 million (up 12%
+year-on-year), consistent with the statement of no material financial
+impact.</li>
+<li><strong>Dividend guidance versus action:</strong> A final dividend
+of ₹54 per equity share for FY26 was proposed by the board on April 16,
+2026 and approved by shareholders at the AGM held on June 24, 2026. The
+dividend was declared and passed with 99.9999% of votes in favour and
+0.0001% against.</li>
+<li><strong>Director re-appointment:</strong> The re-appointment of
+Mr. V. Srinivasa Rangan as Non-Executive Non-Independent Director was
+passed with 94.4699% of votes in favour and 5.5301% against.</li>
+<li><strong>Financial statement adoption:</strong> The audited
+standalone and consolidated financial statements for FY26 were adopted
+with 99.9999% of votes in favour and 0.0001% against.</li>
+<li><strong>Return on equity trend:</strong> ROE was 27.0% (FY22), 24.5%
+(FY23), 29.5% (FY24), 32.4% (FY25), and 32.9% (FY26), showing
+improvement over the period.</li>
+<li><strong>Bonus share adjustment:</strong> A 1:1 bonus issue was
+approved, with 21,41,54,246 equity shares of ₹5 each allotted on
+November 27, 2025. EPS for the quarter ended June 30, 2025 was restated
+to reflect the bonus issuance. During Q1 FY27, 2,53,073 equity shares of
+₹5 each were allotted pursuant to exercise of stock options by certain
+employees.</li>
+<li><strong>Subsidiary treatment:</strong> HDFC AMC International (IFSC)
+Limited, incorporated effective May 27, 2022 in GIFT City, is a wholly
+owned subsidiary. The Company disclosed only standalone financial
+results in the investor presentation as the subsidiary is immaterial to
+the Group; consolidated financial results are available on the stock
+exchange websites and the Company’s website.</li>
+</ul>
+</div>
+</div>
+<div id="broker-narrative" class="section level2">
+<h2>Broker Narrative</h2>
+<p>The broker narrative evolved from a detailed macro-driven analysis in
+2023 — covering regulatory changes, global volatility, FPI outflows, and
+cost inflation alongside industry AUM milestones, strong inflows, and
+digital expansion — to a far simpler 2026 framework focused narrowly on
+lower equity AAuM growth and structural themes like economic
+formalization and growing SIP counts. Key macro and regulatory headwinds
+from the first report faded from the narrative, while tailwinds shifted
+from cyclical inflows and AUM growth to long-term structural
+drivers.</p>
+<p><strong>Fears that came true</strong></p>
+<ul>
+<li>Global macro volatility including persistent inflation, interest
+rate hikes, and geopolitical tensions persisted and likely contributed
+to the widespread negative returns across 2026 reports.</li>
+<li>FPI capital outflows continued to weigh on Indian equities,
+correlating with the deep negative actual returns from January 2026
+onward.</li>
+<li>Operating cost inflation flagged in the first report likely
+persisted, compressing margins as evidenced by the DISAPPOINTMENT
+outcome of the final HDFC Securities report.</li>
+<li>Outflows and debt segment moderation materialized further, as the
+last report explicitly cited ‘lower industry equity AAuM growth.’</li>
+</ul>
+<p><strong>Optimism that failed</strong></p>
+<ul>
+<li>Industry AUM growth optimism failed as the last report explicitly
+noted ‘lower industry equity AAuM growth,’ contradicting the earlier
+milestone of crossing INR 40 Tn with a 13% 5-year CAGR.</li>
+<li>Strong domestic inflows and SIP participation failed to translate
+into positive stock returns, with nearly all reports from 2026 showing
+negative actual outcomes.</li>
+<li>The resilient domestic economy tailwind — strong consumption, capex
+recovery, and fiscal discipline — did not materialize into HDFCAMC
+outperformance, as the stock declined across multiple 2026 broker
+reports.</li>
+</ul>
+</div>
+<div id="broker-timeline" class="section level2">
+<h2>Broker Timeline</h2>
+<p><em>25 broker calls · 2023-06-20 to 2026-09-09</em></p>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-de03dc70dd337de48cb3" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-de03dc70dd337de48cb3">{"x":{"filter":"none","vertical":false,"data":[["2026-09-09","2026-07-16","2026-07-16","2026-07-16","2026-07-07","2026-05-04","2026-04-17","2026-04-16","2026-04-16","2026-01-16","2026-01-16","2025-03-13","2025-01-14","2025-01-14","2024-10-16","2024-10-16","2024-07-15","2024-04-21","2024-01-12","2024-01-11","2023-11-10","2023-10-13","2023-10-12","2023-07-25","2023-06-20"],["HDFC Securities","Prabhudas Lilladher","—","—","—","—","—","Prabhudas Lilladher","—","ICICI Securities","—","—","Yes Securities","Centrum Broking","PL Capital","Centrum Broking","Yes Securities","ICICI Securities","Prabhudas Lilladher","Yes Securities","—","Prabhudas Lilladher","Yes Securities","Prabhudas Lilladher","KRChoksey Research"],["Buy","Buy","Buy","Buy","Overweight","Buy","Buy","Buy","Buy","Buy","Buy","Buy","Add","Buy","Buy","Reduce","Add","Add","Buy","Neutral","Buy","Buy","Neutral","Buy","Accumulate"],[0.1680327868852459,0.1139611579333089,0.1139611579333089,0.1923076923076923,null,0.1795060818282344,0.1510791366906475,0.1269722013523666,0.1269722013523666,0.1981205951448708,0.2307692307692308,null,0.1604139715394567,0.291407867494824,0.176728869374314,-0.002195389681668496,0.1331106870229008,0.07874865156418555,0.1139674378748929,0.05653912050256996,0.08616944243301955,0.088139281828074,0.05263157894736842,0.1191047162270184,0.04012671594508976],[-0.01479508196721308,-0.0762047498270693,-0.0762047498270693,-0.0762047498270693,-0.1363440396637206,-0.1079155379077447,-0.1202883700505013,-0.07726853984339005,-0.07726853984339005,-0.05388066750629726,-0.05388066750629726,0.3693534605525492,0.3197364809223168,0.3721657974197091,0.05652001933810922,0.05652001933810922,0.2155643203883496,0.2460872658287883,0.5297823596792669,0.5093237897909211,1.148583220890547,1.084231598398522,0.9180563312854066,1.091439011658256,1.510862753290161],["DISAPPOINTMENT","PENDING","PENDING","PENDING","NEUTRAL","PENDING","PENDING","PENDING","PENDING","PENDING","PENDING","NEUTRAL","SUCCESS","SUCCESS","PENDING","PENDING","SUCCESS","SUCCESS","SUCCESS","SUCCESS","SUCCESS","SUCCESS","SUCCESS","SUCCESS","SUCCESS"],["","2028-03-31","2028-03-31","2027-07-16","","2027-05-04","2027-04-17","2028-03-31","2028-03-31","2027-01-16","2027-01-16","","","2026-01-14","2026-09-30","2026-09-30","","2025-04-21","","","2025-09-30","2025-09-30","","",""]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>Report Date<\/th>\n      <th>Broker<\/th>\n      <th>Call<\/th>\n      <th>Predicted<\/th>\n      <th>Actual<\/th>\n      <th>Outcome<\/th>\n      <th>Target Date<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":25,"dom":"t","order":[[0,"desc"]],"columnDefs":[{"targets":3,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatPercentage(data, 1, 3, \",\", \".\", null);\n  }"},{"targets":4,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatPercentage(data, 1, 3, \",\", \".\", null);\n  }"},{"className":"dt-right","targets":[3,4]},{"name":"REPORT_DATE","targets":0},{"name":"BROKER","targets":1},{"name":"REC","targets":2},{"name":"PRED","targets":3},{"name":"ACT","targets":4},{"name":"OUTCOME","targets":5},{"name":"TARGET_DATE","targets":6}],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data, displayNum, displayIndex, dataIndex) {\nvar value=data[3]; $(this.api().cell(row, 3).node()).css({'color':isNaN(parseFloat(value)) ? '' : value <= -0.001 ? \"#8B0000\" : value <= 0.001 ? \"#777777\" : \"#006400\"});\nvar value=data[4]; $(this.api().cell(row, 4).node()).css({'color':isNaN(parseFloat(value)) ? '' : value <= -0.001 ? \"#8B0000\" : value <= 0.001 ? \"#777777\" : \"#006400\"});\nvar value=data[5]; $(this.api().cell(row, 5).node()).css({'font-weight':'bold','color':value == \"SUCCESS\" ? \"#006400\" : value == \"DISAPPOINTMENT\" ? \"#8B0000\" : value == \"NEUTRAL\" ? \"#555555\" : value == \"FLAT\" ? \"#777777\" : value == \"PENDING\" ? \"#b8860b\" : value == \"NA\" ? \"#999999\" : null});\n}"}},"evals":["options.columnDefs.0.render","options.columnDefs.1.render","options.rowCallback"],"jsHooks":[]}</script>
+</div>
+</div>
+
+&nbsp;
+&nbsp;
+<hr />
+<p style="text-align: center;">Copyright &copy; 2023 SAS Data Analytics Pvt. Ltd. All rights reserved.</p>
+<p style="text-align: center;"><a href="https://github.com/stockviz/reports/issues">&#x1F41E;</a></p>
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
