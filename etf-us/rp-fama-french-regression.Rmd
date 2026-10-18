@@ -1,0 +1,100 @@
+---
+title: Fama-French Factor Regressoins
+subtitle: StockViz
+editor_options:
+  chunk_output_type: console
+output: 
+  html_document:
+    theme: flatly
+    highlight: tango
+    self_contained: false
+    lib_dir: risk/rmdlib
+    toc: true
+    includes:
+        in_header: header.html
+        after_body: ../footer.html
+---
+
+```{r, init_chunk, echo = FALSE, message = FALSE, warning = FALSE}
+library('RODBC')
+library('tidyverse')
+library('DT')
+
+#source("C:/stockviz/r/config.r")
+source("/mnt/hollandr/config.r")
+
+options("scipen"=100)
+options(stringsAsFactors = FALSE)
+
+createdDate <- gsub(" 0", " ",format(Sys.Date(), "%B %d, %Y"))
+
+lcon <- odbcDriverConnect(sprintf("Driver={ODBC Driver 17 for SQL Server};Server=%s;Database=%s;Uid=%s;Pwd=%s;", ldbserver, ldbname, ldbuser, ldbpassword), case = "nochange", believeNRows = TRUE)
+lconUs2 <- odbcDriverConnect(sprintf("Driver={ODBC Driver 17 for SQL Server};Server=%s;Database=%s;Uid=%s;Pwd=%s;", ldbserver, "StockVizUs2", ldbuser, ldbpassword), case = "nochange", believeNRows = TRUE)
+	
+```
+
+---
+date: `r createdDate`
+---
+
+*Read: [Introduction to factors](https://stockviz.biz/2020/09/07/factors/) *
+
+```{r, metrics_load_chunk, echo = FALSE, message = FALSE, warning = FALSE}
+
+maxDt <- sqlQuery(lconUs2, "select max(time_stamp) from FAMA_FRENCH_REGRESSION") [[1]]
+indusDf <- sqlQuery(lconUs2, sprintf("select * from FAMA_FRENCH_REGRESSION where time_stamp='%s' and KEY_TYPE = 'FF_IND'", maxDt)) 
+etfDf <- sqlQuery(lconUs2, sprintf("select * from FAMA_FRENCH_REGRESSION where time_stamp='%s' and KEY_TYPE = 'ETF'", maxDt)) 
+
+idefs <- sqlQuery(lconUs2, "select * from FAMA_FRENCH_DEFS order by ID")
+etfMetaDf <- sqlQuery(lcon, "select SYMBOL, FUND from ETF_META where ASSET_CLASS = 'Equity'")
+
+iDataDf <- indusDf %>% inner_join(idefs, by=c('KEY_ID' = 'ID')) %>% select(!c(TIME_STAMP, KEY_TYPE, RESIDUAL_SD, R_SQD)) %>% relocate(DEF, .after=KEY_ID) %>% rename(ALPHA = INTERCEPT, RESIDUAL = RESIDUAL_CUMRET) %>%
+			mutate(across(where(is.numeric), round, 2))
+			
+etfDataDf <- etfDf %>% inner_join(etfMetaDf, by=c('KEY_ID' = 'SYMBOL')) %>% select(!c(TIME_STAMP, KEY_TYPE, RESIDUAL_SD, R_SQD)) %>% relocate(FUND, .after=KEY_ID) %>% rename(ALPHA = INTERCEPT, RESIDUAL = RESIDUAL_CUMRET) %>%
+			mutate(across(where(is.numeric), round, 2))
+
+
+```
+```{r, metrics_format_chunk, echo = FALSE, message = FALSE, warning = FALSE}
+tableList <- list()
+	
+rankTibs <- iDataDf %>%
+	mutate(more = sprintf('<a href="/reports02/etf-us/risk/rp-fama-french-industry.html#%s-%s" target="_blank">>>></a>', tolower(KEY_ID), tolower(gsub(" [^[:alnum:] ] | ", "-", DEF))))
+	
+tableColNames <- names(rankTibs)	
+tableColNames[1] <- ""
+tableColNames[2] <- ""
+
+tableList[['industry']] <- datatable(rankTibs, rownames = F, class = 'cell-border stripe', 
+							escape = c(rep(T, ncol(rankTibs)-2), rep(F, 2)), filter='none', 
+							colnames = tableColNames, 
+							options = list(dom = 't', pageLength = nrow(rankTibs)))
+							
+							
+rankTibs <- etfDataDf %>%
+	mutate(more = ifelse(file.exists(sprintf("risk/rp-%s.html", gsub("[^[:alnum:] ]| ", "", KEY_ID))), 
+						sprintf('<a href="/reports02/etf-us/risk/rp-%s.html" target="_blank">>>></a>', gsub("[^[:alnum:] ]| ", "", KEY_ID)), 
+						""))
+	
+tableColNames <- names(rankTibs)	
+tableColNames[1] <- ""
+tableColNames[2] <- ""
+
+tableList[['etf']] <- datatable(rankTibs, rownames = F, class = 'cell-border stripe', 
+							escape = c(rep(T, ncol(rankTibs)-2), rep(F, 2)), filter='none', 
+							colnames = tableColNames, 
+							options = list(dom = 't', pageLength = nrow(rankTibs)))							
+
+```
+
+```{r, metrics_print_chunk, echo = FALSE, results='asis', message = FALSE, warning = FALSE}
+
+cat("\n\n### ETFs\n\n")
+htmltools::tagList(tableList[['etf']])
+
+cat("\n\n### Industries\n\n")
+htmltools::tagList(tableList[['industry']])
+
+
+```

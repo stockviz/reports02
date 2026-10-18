@@ -1,0 +1,81 @@
+---
+title: Fama-French Industry Returns
+subtitle: StockViz
+editor_options:
+  chunk_output_type: console
+output: 
+  html_document:
+    theme: flatly
+    highlight: tango
+    self_contained: false
+    toc: true
+    lib_dir: risk/rmdlib	
+    includes:
+        in_header: header.html
+        after_body: ../footer.html		
+---
+
+```{r, init_chunk, echo = FALSE, message = FALSE, warning = FALSE}
+library('RODBC')
+library('tidyverse')
+
+plotPath <- "analysis/plots-fama-fench"
+
+#source("C:/stockviz/r/config.r")
+source("/mnt/hollandr/config.r")
+
+options("scipen"=100)
+options(stringsAsFactors = FALSE)
+
+createdDate <- gsub(" 0", " ",format(Sys.Date(), "%B %d, %Y"))
+
+lconUs2 <- odbcDriverConnect(sprintf("Driver={ODBC Driver 17 for SQL Server};Server=%s;Database=%s;Uid=%s;Pwd=%s;", ldbserver, "StockVizUs2", ldbuser, ldbpassword), case = "nochange", believeNRows = TRUE)
+idefs <- sqlQuery(lconUs2, "select * from FAMA_FRENCH_DEFS")
+
+benchmarks <- c("MKT_RF", "ALPHA", "SMB", "HML", "RMW", "CMA", "MOM", "RESIDUAL")
+ffdesc <- read.csv("fama-french-factors.csv")
+	
+```
+
+---
+date: `r createdDate`
+---
+
+![](`r paste0(plotPath, '/fama-french-industry.all.png')`)
+
+
+```{r, plot_create_chunk, results='asis', echo = FALSE, message = FALSE, warning = FALSE, fig.height=6, fig.width=12}
+
+for(i in 1:nrow(idefs)){
+	cat("\n\n### ", paste0(idefs$ID[i], ": ", idefs$DEF[i]), "\n\n")
+	cat("\n\n#### Cumulative Returns\n\n")
+	cat("![](", sprintf('%s/%s.cumret.png', plotPath, idefs$ID[i]), ")")
+	cat("\n\n")
+	cat("\n\n#### Annual Returns\n\n")
+	cat("![](", sprintf('%s/%s.fan.png', plotPath, idefs$ID[i]), ")")
+	cat("\n\n")
+	cat("![](", sprintf('%s/%s.annret.png', plotPath, idefs$ID[i]), ")")
+	cat("\n\n")
+	
+	if(file.exists(sprintf("%s/fama-french-regress-industry.%s.%s.png", plotPath, idefs$ID[i], benchmarks[1])) ){
+		cat("\n\n#### Factor Exposures\n\n")
+		for(bm in benchmarks){
+			if(!file.exists(sprintf("%s/fama-french-regress-industry.%s.%s.png", plotPath, idefs$ID[i], bm)) ){
+				next
+			}
+			
+			cat("\n\n")
+			cat("![](", sprintf("%s/fama-french-regress-industry.%s.%s.png", plotPath, idefs$ID[i], bm), ")")
+			if(nrow(ffdesc[ffdesc$ABBR == bm,]) > 0){
+				cat("\n\n<i>", bm, ": ", ffdesc[ffdesc$ABBR == bm,]$DESC[1], "</i>\n\n")
+			}
+			cat("\n\n<br>")
+		}
+	}
+	cat("\n\n<br><br>")
+}
+
+```
+
+*Source: [Fama-French Data Library](https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html)*
+
