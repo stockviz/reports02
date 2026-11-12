@@ -32,18 +32,24 @@ before <- feedState(dbPath)
 template <- readLines(file.path(root, "rp-eq-in-risk.Rmd"), warn = FALSE)
 start <- grep("^```\\{r, broker_cnbc_chunk,", template)
 stopifnot(length(start) == 1)
-end <- start + which(template[(start + 1):length(template)] == "```")[1]
+managementStart <- grep("^```\\{r, management_cnbc_chunk,", template)
+stopifnot(length(managementStart) == 1, managementStart > start)
+end <- managementStart + which(template[(managementStart + 1):length(template)] == "```")[1]
 chunk <- template[start:end]
 input <- file.path(out, "broker-section-preview.Rmd")
-writeLines(c("---", "title: 'CNBC-TV18 broker-section preview'", "params:", "  ticker: ''",
+writeLines(c("---", "title: 'CNBC-TV18 source-section preview'", "params:", "  ticker: ''",
   "output:", "  html_document:", "    theme: flatly", "    self_contained: true", "---", "",
   "# `r params$ticker`", "",
-  "Broker-section preview only. Existing Broker Narrative and Broker Timeline are unchanged and are not recomputed here.",
+  "Source-section preview only. Existing Broker Narrative and Broker Timeline are unchanged and are not recomputed here.",
   "", "```{r, preview_setup, echo=FALSE}", "ticker <- params$ticker", "```", "", chunk), input)
 
 expected <- list(DIVISLAB = c("JPMorgan", "Overweight", "INR 12,500"),
   HINDALCO = c("Citi", "Neutral", "INR 1,050", "Satish Pai"),
-  TATASTEEL = c("Goldman Sachs", "Neutral", "INR 215", "Nomura", "INR 210", "INR 240"))
+  TATASTEEL = c("Goldman Sachs", "Neutral", "INR 215", "Nomura", "INR 210", "INR 240"),
+  LICI = c("R Doraiswamy", "CEO &amp; MD", "APE growth"),
+  IDBI = c("R Doraiswamy", "LIC", "not necessarily management of this company"),
+  BOSCHLTD = c("Bosch", "Management cites"),
+  SAREGAMA = c("Nilesh Shah", "Envision Capital", "No recorded management comments"))
 for(ticker in names(expected)) {
   result <- readCnbcStatements(ticker)
   stopifnot(result$status == "ok", nrow(result$data) > 0)
@@ -53,8 +59,13 @@ for(ticker in names(expected)) {
   html <- paste(readLines(output, warn = FALSE), collapse = "\n")
   stopifnot(all(vapply(expected[[ticker]], grepl, logical(1), x = html, fixed = TRUE)))
   stopifnot(grepl("https://x.com/CNBCTV18Live/status/", html, fixed = TRUE))
+  stopifnot(grepl("Management comments", html, fixed = TRUE))
+  managementHtml <- as.character(cnbcManagementHtml(result))
+  stopifnot(!grepl("Rating / target", managementHtml, fixed = TRUE))
+  if(ticker %in% c("LICI", "IDBI", "BOSCHLTD")) stopifnot(any(result$data$is_management))
+  if(ticker %in% c("HINDALCO", "SAREGAMA")) stopifnot(!any(result$data$is_management))
   cat(ticker, ":", nrow(result$data), "statements;", sum(result$data$is_recommendation),
-    "ratings/targets; rendered", output, "\n")
+    "ratings/targets;", sum(result$data$is_management), "management comments; rendered", output, "\n")
 }
 after <- feedState(dbPath)
 stopifnot(identical(before, after))

@@ -14,7 +14,17 @@ emptyCnbcStatements <- function() {
     evidence = character(), ticker = character(), kind = character(), call = character(),
     call_normalized = character(), price_target = double(), previous_target = double(),
     target_currency = character(), target_action = character(), target_evidence = character(),
-    horizon = character(), is_recommendation = logical(), stringsAsFactors = FALSE)
+    horizon = character(), is_recommendation = logical(), is_management = logical(), stringsAsFactors = FALSE)
+}
+
+# Require an explicit executive designation and employer; do not infer titles from names.
+cnbcIsManagement <- function(data) {
+  role <- tolower(trimws(ifelse(is.na(data$speaker_designation), "", data$speaker_designation)))
+  employer <- tolower(trimws(ifelse(is.na(data$speaker_entity), "", data$speaker_entity)))
+  executive <- grepl("\\b(ceo|md|cmd|cfo|coo|chairman|chairperson|president|director|management)\\b|chief executive|chief financial|chief operating", role)
+  external <- grepl("analyst|research|broker|investment|fund manager|portfolio manager|strategist", role) |
+    grepl("capital|securities|broker|research|asset management|mutual fund|\\bamc\\b|investment|wealth", employer)
+  executive & nzchar(employer) & !external
 }
 
 # Read completed, exact-company statements without creating or modifying SQLite files.
@@ -65,6 +75,7 @@ readCnbcStatements <- function(ticker, dbPath = cnbcStatementsDbPath(), asOf = S
       "top pick", "positive", "negative", "not rated", "unrated", "under review",
       "subscribe", "exit", "dropping coverage")
     data$is_recommendation <- (known | valid) & !(rating %in% c("own", "owned", "ownership"))
+    data$is_management <- cnbcIsManagement(data) & !data$is_recommendation
     list(status = "ok", message = "", data = data)
   }, error = function(e) {
     # Never leak connection strings or turn a damaged/mismatched schema into 'no calls'.
@@ -136,7 +147,7 @@ cnbcStatementsHtml <- function(result) {
     return(tags$section(class = "cnbc-statements", heading,
       tags$p(role = if(result$status == "ok") "status" else "alert", result$message)))
   }
-  data <- result$data
+  data <- result$data[!result$data$is_management, , drop = FALSE]
   content <- list()
   for(recommendations in c(TRUE, FALSE)) {
     part <- data[data$is_recommendation == recommendations, , drop = FALSE]
@@ -152,4 +163,55 @@ cnbcStatementsHtml <- function(result) {
     tags$style(".cnbc-table-scroll{overflow-x:auto;margin-bottom:20px}.cnbc-table{width:100%;min-width:850px;border-collapse:collapse;font-size:14px}.cnbc-table th,.cnbc-table td{padding:10px;vertical-align:top;border:1px solid #ddd;overflow-wrap:anywhere}.cnbc-table th{background:#eef3f6}.cnbc-table th:nth-child(1){width:16%}.cnbc-table th:nth-child(2){width:17%}.cnbc-table th:nth-child(3){width:24%}.cnbc-table small{display:block;margin-top:8px;color:#555}"),
     tags$p("Extracted from CNBC-TV18 posts; ratings and targets are as published, not current consensus. OCR may contain errors. Speaker attribution is retained; not all speakers are brokers. These statements are separate from the Broker Narrative and Broker Timeline and have no calculated performance or outcomes."),
     content)
+}
+
+# Render management comments grouped by person and IST day, retaining every source.
+cnbcManagementHtml <- function(result) {
+  tags <- htmltools::tags
+  heading <- tags$h2("Management comments")
+  if(result$status != "ok") {
+    return(tags$section(class = "cnbc-management", heading, tags$p(role = "alert", result$message)))
+  }
+  data <- result$data[result$data$is_management, , drop = FALSE]
+  if(nrow(data) == 0) {
+    return(tags$section(class = "cnbc-management", heading,
+      tags$p(role = "status", "No recorded management comments with an explicit designation and affiliation for this ticker.")))
+  }
+  # Group on the IST calendar day and normalized person, not the UTC date.
+  utc <- sub("(\\+00:00|Z)$", "", data$published_at_utc)
+  times <- as.POSIXct(utc, format = "%Y-%m-%dT%H:%M:%OS", tz = "UTC")
+  days <- format(times, "%Y-%m-%d", tz = "Asia/Kolkata")
+  people <- tolower(gsub("[[:space:]]+", " ", trimws(data$speaker_name)))
+  unnamed <- is.na(people) | !nzchar(people)
+  people <- paste0("person:", people)
+  people[unnamed] <- paste0("affiliation:", tolower(trimws(data$speaker_entity[unnamed])))
+  # Keep malformed dates or unattributed records separate rather than guessing identities.
+  keys <- paste(days, people, sep = "\r")
+  unsafe <- is.na(days) | unnamed
+  keys[unsafe] <- paste0("unattributed:", which(unsafe))
+  groups <- lapply(unique(keys), function(key) which(keys == key))
+  rows <- lapply(groups, function(indices) {
+    part <- data[indices, , drop = FALSE]
+    row <- part[1, , drop = FALSE]
+    sources <- part[!duplicated(part[c("tweet_id", "source_url")]), , drop = FALSE]
+    links <- lapply(seq_len(nrow(sources)), function(i) {
+      link <- cnbcPublished(sources[i, , drop = FALSE])
+      if(i > 1 && inherits(link, "shiny.tag")) link$children <- list(paste("Source", i))
+      tags$div(link)
+    })
+    affiliations <- unique(part[c("speaker_entity", "speaker_designation")])
+    attribution <- lapply(seq_len(nrow(affiliations)), function(i) {
+      tags$div(tags$div(cnbcText(affiliations$speaker_entity[i])),
+        tags$div(cnbcText(affiliations$speaker_designation[i])))
+    })
+    comments <- lapply(seq_len(nrow(part)), function(i) tags$li(cnbcText(part$what_said[i])))
+    tags$tr(tags$td(links),
+      tags$td(tags$strong(cnbcText(trimws(row$speaker_name), "Company management")), attribution),
+      tags$td(tags$ul(comments)))
+  })
+  tags$section(class = "cnbc-management", heading,
+    tags$p("Company-related comments from CNBC-TV18 posts in x-stream. Speakers are management of the displayed affiliation, not necessarily management of this company. Only explicit executive designations and affiliations are included; analyst, broker and investment-manager commentary remains separate. OCR may contain errors."),
+    tags$style(".cnbc-management table{width:100%;border-collapse:collapse;font-size:14px}.cnbc-management th,.cnbc-management td{padding:10px;vertical-align:top;border:1px solid #ddd;overflow-wrap:anywhere}.cnbc-management th{background:#eef3f6}.cnbc-management th:first-child{width:19%}.cnbc-management th:nth-child(2){width:23%}@media(max-width:600px){.cnbc-management table,.cnbc-management tbody,.cnbc-management tr,.cnbc-management td{display:block}.cnbc-management thead{display:none}.cnbc-management tr{margin-bottom:16px}.cnbc-management td+td{border-top:0}}"),
+    tags$table(tags$thead(tags$tr(tags$th("Published / source (IST)"),
+      tags$th("Speaker / affiliation / designation"), tags$th("Commentary"))), tags$tbody(rows)))
 }

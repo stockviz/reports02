@@ -37,9 +37,24 @@ Data contract and presentation
 - Retain raw ratings such as Neutral and Overweight. Show positive finite targets
   only when explicit target evidence exists. Show previous target, target action,
   currency, and horizon only as recorded; do not infer them from CMP or returns.
-- Separate ratings/targets from other company commentary. Ownership disclosures
-  such as 'own' remain commentary, not Buy recommendations. Preserve each speaker,
-  affiliation, and designation; not every speaker is a broker.
+- Separate ratings/targets, management comments, and other company commentary.
+  Ownership disclosures such as 'own' remain commentary, not Buy recommendations.
+  Management requires an explicit executive designation (including 'management')
+  plus a recorded employer. Analyst/research, broker, fund/portfolio manager and
+  investment-manager affiliations are excluded conservatively. No name catalog,
+  external lookup, or inferred job title is used. Missing titles remain missing.
+- Management comments concern the queried ticker but can come from another company:
+  the displayed employer is authoritative, not the subject ticker. For example,
+  LIC CEO & MD R Doraiswamy discussing IDBI remains attributed to LIC, never IDBI
+  management. Explicitly titled management comments move to the dedicated section
+  without duplication; all other commentary stays in the original section.
+- In the current real feed Satish Pai/Hindalco has a NULL designation, so his quotes
+  remain other company commentary and HINDALCO's management section is visibly empty.
+  Do not fabricate 'MD' to populate it. Nilesh Shah/Envision Capital ownership quotes
+  likewise remain commentary. LIC and Bosch have explicitly designated management.
+- Management displays linked IST dates, speaker, employer, recorded designation,
+  and the original commentary, with no empty rating/target column. Empty results
+  and unavailable feeds have distinct notices. Both sections share one read result.
 - Link the publication time, displayed in IST, to an HTTPS CNBC-TV18 X/Twitter
   status URL only when its ID matches the source tweet. Escape all extracted text.
 - Do not insert these statements into the document-derived narrative or timeline,
@@ -71,6 +86,7 @@ Regression tests
 
 From reports02/eq-in/risk:
   Rscript tests/test-broker-x-statements.R .
+  Rscript tests/test-management-x-statements.R .
 
 The tests use disposable local SQLite fixtures, not production writes. They cover
 company/status/time filtering, duplicates, original ratings, target evidence,
@@ -88,9 +104,10 @@ Choose an output directory outside the published report tree:
 On Iceland, prefix the command with the explicit local override:
   STOCKVIZ_X_STREAM_DB=/mnt/data/x-stream/market_statements.sqlite Rscript tests/render-broker-x-preview.R . /PATH/TO/UNPUBLISHED_PREVIEW
 
-The script extracts the exact new chunk from the production template and renders
-standalone, self-contained HTML for DIVISLAB, HINDALCO, and TATASTEEL. It verifies
-known real broker names and targets, saves read-only-verification.rds, and parses
+The script extracts both exact source chunks from the production template and renders
+standalone, self-contained HTML for DIVISLAB, HINDALCO, TATASTEEL, LICI, IDBI,
+BOSCHLTD, and SAREGAMA. It verifies real management attribution and conservative
+empty states as well as broker names and targets, saves read-only-verification.rds, and parses
 all R chunks from the full template. Inspect every HTML file in a browser, including
 the last row, rightmost commentary, source links, and disclosures. This preview
 does not exercise the full report's NORWAY, document database, or production host
